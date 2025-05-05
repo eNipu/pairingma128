@@ -3,39 +3,39 @@ FROM ubuntu:20.04
 # Avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install essential build tools and GMP
-RUN apt-get update && apt-get install -y \
+# Add retry and timeout options to apt to make it more resilient
+RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80retries && \
+    echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90assumeyes && \
+    echo 'Acquire::http::Timeout "180";' > /etc/apt/apt.conf.d/99timeout && \
+    echo 'Acquire::https::Timeout "180";' > /etc/apt/apt.conf.d/99timeout
+
+# Install required packages with increased resilience
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     gcc \
     g++ \
-    make \
-    libgmp-dev \
+    gdb \
     git \
-    openssh-client \
+    libgmp-dev \
+    make \
     python3 \
     valgrind \
-    gdb \
-    lcov \
-    gcovr \
-    clang \
-    clang-tools \
-    clang-format \
+    vim \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up a non-root user for development
-RUN useradd -m developer && \
-    echo "developer:developer" | chpasswd && \
-    adduser developer sudo && \
-    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+# Create a non-root user
+RUN useradd -m developer \
+    && echo "developer:developer" | chpasswd \
+    && adduser developer sudo \
+    && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Set up the working directory
+WORKDIR /workspace
 
 # Switch to the non-root user
 USER developer
-WORKDIR /home/developer
-
-# Set up environment
-ENV PATH="/usr/local/bin:${PATH}"
-
-# Set default working directory
-WORKDIR /workspace

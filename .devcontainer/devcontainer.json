@@ -9,35 +9,24 @@
             "extensions": [
                 "ms-vscode.cpptools",
                 "ms-vscode.cmake-tools",
-                "twxs.cmake",
-                "ms-vscode.cpptools-extension-pack"
+                "twxs.cmake"
             ],
             "settings": {
                 "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
                 "cmake.configureOnOpen": true,
                 "cmake.buildDirectory": "${workspaceFolder}/build",
-                "cmake.generator": "Unix Makefiles",
                 "editor.formatOnSave": true,
                 "files.associations": {
                     "*.h": "c"
-                },
-                "cmake.buildTask": true,
-                "cmake.configureArgs": [
-                    "-DCMAKE_BUILD_TYPE=Debug"
-                ],
-                "cmake.testEnvironment": {
-                    "CTEST_OUTPUT_ON_FAILURE": "1"
                 }
             }
         }
     },
-    "forwardPorts": [2222],
     "runArgs": [
         "--cap-add=SYS_PTRACE",
         "--security-opt", "seccomp=unconfined"
     ],
-    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
     "workspaceFolder": "/workspace",
-    "remoteUser": "developer",
-    "postCreateCommand": "cd /workspace && cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug && cmake --build build && chmod +x .devcontainer/test-runner.sh && .devcontainer/test-runner.sh"
+    "postCreateCommand": "cmake -B build -S . && cmake --build build"
 }

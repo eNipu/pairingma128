@@ -1,3 +1,6 @@
+#ifndef BLS_12_H
+#define BLS_12_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <gmp.h>
@@ -7,6 +10,41 @@
 #include <string.h>
 #define x_bit 77
 int X_bit_binary[x_bit+1];
+
+// Global parameters required across functions
+extern mpz_t prime;
+extern mpz_t curve_parameter_A;
+extern mpz_t curve_parameter_B;
+extern mpz_t EFp_order;
+extern mpz_t trace_t;
+extern mpz_t mother_parameter;
+extern struct Fp inv_CNR1;
+extern struct Fp inv_CNR2;
+extern struct Fp2 Fp2_basis_inv;
+extern struct Fp2 Fp2_basis_prime_1_div_3_1;
+extern struct Fp2 Fp2_basis_prime_1_div_3_2;
+extern struct Fp2 Fp2_basis_prime_1_div_6;
+extern struct Fp2 Fp2_basis_prime_2_div_3_1;
+extern struct Fp2 Fp2_basis_prime_2_div_3_2;
+extern struct Fp2 Fp2_basis_prime_2_div_6;
+extern struct Fp2 Fp2_basis_prime_3_div_6;
+extern struct Fp2 Fp2_basis_prime_4_div_3_1;
+extern struct Fp2 Fp2_basis_prime_4_div_3_2;
+extern struct Fp2 Fp2_basis_prime_4_div_6;
+extern struct Fp2 Fp2_basis_prime_8_div_3_1;
+extern struct Fp2 Fp2_basis_prime_8_div_3_2;
+extern struct Fp2 Fp2_basis_prime_8_div_6;
+extern struct Fp2 Fp2_basis_prime_10_div_3_1;
+extern struct Fp2 Fp2_basis_prime_10_div_3_2;
+extern struct Fp2 Fp2_basis_prime_10_div_6;
+extern struct Fp2 Fp2_basis_inv_prime_1_div_3;
+extern struct Fp2 Fp2_basis_inv_prime_1_div_2;
+extern struct Fp2 Fp2_basis_inv_prime_2_div_3;
+extern struct Fp2 Fp2_basis_inv_prime_2_div_2;
+extern struct Fp2 Fp2_basis_inv_prime_3_div_3;
+extern struct Fp2 Fp2_basis_inv_prime_3_div_2;
+extern struct Fp2 Fp2_basis_inv_prime_10_div_3;
+extern struct Fp2 Fp2_basis_inv_prime_10_div_2;
 
 mpz_t prime;
 mpz_t mother_parameter;
@@ -389,3 +427,5 @@ void test();										//**(easy)
 void test_opt_ate_pairing();
 void test_frobenius();
 void check_num_of_Fp_mul();
+
+#endif /* BLS_12_H */
