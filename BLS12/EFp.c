@@ -189,3 +189,26 @@ void EFp_skew_frobenius(struct EFp *ANS, struct EFp *A) {
     Fp_mul(&ANS->x, &A->x, &inv_CNR1);
     Fp_set_neg(&ANS->y, &A->y);
 }
+
+/**
+ * @brief Compute the skew frobenius map of order 2 for a point on EFp
+ * 
+ * The skew frobenius map is an endomorphism that can be used to optimize 
+ * scalar multiplication on elliptic curves. For BLS12 curves, it provides 
+ * efficient computation for pairing operations.
+ * 
+ * @param[out] ANS The result of applying skew frobenius map to point A
+ * @param[in] A The point to apply the skew frobenius map to
+ */
+void EFp_skew_frobenius_2(struct EFp *ANS, struct EFp *A) {
+    // If the point is at infinity, return infinity
+    if (A->flag == 0) {
+        ANS->flag = 0;
+        return;
+    }
+    
+    // For BLS12 curves, skew frobenius of order 2 maps (x,y) to (x,-y)
+    Fp_set(&ANS->x, &A->x);
+    Fp_set_neg(&ANS->y, &A->y);
+    ANS->flag = 1;
+}

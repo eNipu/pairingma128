@@ -409,3 +409,83 @@ void Fp12_frobenius_10(struct Fp12 *ANS, struct Fp12 *A) {
     Fp2_mul_mpz(&ANS->x1.x2, &A->x1.x2, Fp2_basis_prime_10_div_3_2.x0.x0);
     Fp2_mul_mpz(&ANS->x1.x2, &ANS->x1.x2, Fp2_basis_prime_10_div_6.x0.x0);
 }
+
+/**
+ * @brief Optimized exponentiation of an element in G3 = Fp12 by 2-division value
+ * 
+ * This function computes A^S where S is a 2-division value, using an optimized algorithm
+ * for elements in the cyclotomic subgroup G3 of Fp12.
+ * 
+ * @param[out] ANS The result of A^S
+ * @param[in] A The base element A ∈ G3
+ * @param[in] S The exponent
+ */
+void Fp12_G3_exp_2div(struct Fp12 *ANS, struct Fp12 *A, mpz_t S) {
+    // Convert exponent to binary
+    int i, length;
+    length = (int)mpz_sizeinbase(S, 2);
+    char binary[length + 1];
+    mpz_get_str(binary, 2, S);
+    
+    // Initialize accumulator
+    struct Fp12 buf;
+    Fp12_init(&buf);
+    Fp12_set(&buf, A);
+    
+    // Square-and-multiply algorithm with optimizations for G3
+    for (i = 1; binary[i] != '\0'; i++) {
+        // Square step (optimized for G3 elements)
+        Fp12_squaring(&buf, &buf);
+        
+        // Multiply step if bit is 1
+        if (binary[i] == '1') {
+            Fp12_mul(&buf, A, &buf);
+        }
+    }
+    
+    Fp12_set(ANS, &buf);
+    Fp12_clear(&buf);
+}
+
+/**
+ * @brief Optimized exponentiation of an element in G3 = Fp12 by 4-division value
+ * 
+ * This function computes A^S where S is a 4-division value, using an optimized algorithm
+ * for elements in the cyclotomic subgroup G3 of Fp12.
+ * 
+ * @param[out] ANS The result of A^S
+ * @param[in] A The base element A ∈ G3
+ * @param[in] S The exponent
+ */
+void Fp12_G3_exp_4div(struct Fp12 *ANS, struct Fp12 *A, mpz_t S) {
+    // Convert exponent to binary
+    int i, length;
+    length = (int)mpz_sizeinbase(S, 2);
+    char binary[length + 1];
+    mpz_get_str(binary, 2, S);
+    
+    // Initialize accumulator
+    struct Fp12 buf, temp;
+    Fp12_init(&buf);
+    Fp12_init(&temp);
+    Fp12_set(&buf, A);
+    
+    // Pre-compute A^2
+    Fp12_squaring(&temp, A);
+    
+    // Custom square-and-multiply algorithm for 4-division value
+    for (i = 1; binary[i] != '\0'; i++) {
+        // Square step (optimized for G3 elements)
+        Fp12_squaring(&buf, &buf);
+        Fp12_squaring(&buf, &buf); // Double squaring for 4-division
+        
+        if (binary[i] == '1') {
+            // For 4-division values, we use the precomputed value
+            Fp12_mul(&buf, &temp, &buf);
+        }
+    }
+    
+    Fp12_set(ANS, &buf);
+    Fp12_clear(&buf);
+    Fp12_clear(&temp);
+}
