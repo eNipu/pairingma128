@@ -1,6 +1,5 @@
 #include "BLS_12.h"
 
-unsigned long int num,mpz_mpz_mul,mpz_mpz_mul,mpz_ui_mul,Fp_mpz_sqr,mpz_mpz_add,mpz_ui_add,basis_mul_num,Fp_inv_num;
 /*============================================================================*/
 /* main                                                                       */
 /*============================================================================*/
@@ -15,7 +14,7 @@ int main(){
     return 0;
 }
 /*============================================================================*/
-/* Fp                                                                         */
+/*  init                                                                      */
 /*============================================================================*/
 /*---------------------------------init---------------------------------*/
 void Fp_init(struct Fp *P){
@@ -580,81 +579,57 @@ int Fp2_cmp_one(struct Fp2 *A){
     }
     return 1;
 }
-/*--------------------------------frobenius--------------------------------*/
-void Fp2_frobenius_1(struct Fp2 *ANS,struct Fp2 *A){
-    Fp_set(&ANS->x0,&A->x0);
-    Fp_set_neg(&ANS->x1,&A->x1);;
-}
-void Fp2_frobenius_2(struct Fp2 *ANS,struct Fp2 *A){
-    Fp2_set(ANS,A);
-}
-void Fp2_frobenius_3(struct Fp2 *ANS,struct Fp2 *A){
-    Fp_set(&ANS->x0,&A->x0);
-    Fp_set_neg(&ANS->x1,&A->x1);
-}
-void Fp2_frobenius_4(struct Fp2 *ANS,struct Fp2 *A){
-    Fp2_set(ANS,A);
-}
-void Fp2_frobenius_6(struct Fp2 *ANS,struct Fp2 *A){
-    Fp2_set(ANS,A);
-}
-void Fp2_frobenius_8(struct Fp2 *ANS,struct Fp2 *A){
-    Fp2_set(ANS,A);
-}
-void Fp2_frobenius_10(struct Fp2 *ANS,struct Fp2 *A){
-    Fp2_set(ANS,A);
-}
 /*============================================================================*/
 /* Fp6                                                                        */
 /*============================================================================*/
 /*---------------------------------init---------------------------------*/
 void Fp6_init(struct Fp6 *P){
-    Fp2_init(&P->x0);
-    Fp2_init(&P->x1);
-    Fp2_init(&P->x2);
+    Fp2_init(&P->x);
+    Fp2_init(&P->y);
+    Fp2_init(&P->z);
 }
 /*---------------------------------set----------------------------------*/
 void Fp6_set(struct Fp6 *P,struct Fp6 *A){
-    Fp2_set(&P->x0,&A->x0);
-    Fp2_set(&P->x1,&A->x1);
-    Fp2_set(&P->x2,&A->x2);
+    Fp2_set(&P->x,&A->x);
+    Fp2_set(&P->y,&A->y);
+    Fp2_set(&P->z,&A->z);
 }
 void Fp6_set_ui(struct Fp6 *P,unsigned long int a){
-    Fp2_set_ui(&P->x0,a);
-    Fp2_set_ui(&P->x1,a);
-    Fp2_set_ui(&P->x2,a);
+    Fp2_set_ui(&P->x,a);
+    Fp2_set_ui(&P->y,a);
+    Fp2_set_ui(&P->z,a);
 }
 void Fp6_set_mpz(struct Fp6 *P,mpz_t a){
-    Fp2_set_mpz(&P->x0,a);
-    Fp2_set_mpz(&P->x1,a);
-    Fp2_set_mpz(&P->x2,a);
+    Fp2_set_mpz(&P->x,a);
+    Fp2_set_mpz(&P->y,a);
+    Fp2_set_mpz(&P->z,a);
 }
 void Fp6_set_neg(struct Fp6 *P,struct Fp6 *A){
-    Fp2_set_neg(&P->x0,&A->x0);
-    Fp2_set_neg(&P->x1,&A->x1);
-    Fp2_set_neg(&P->x2,&A->x2);
+    Fp_set_neg(&P->x,&A->x);
+    Fp_set_neg(&P->y,&A->y);
+    Fp_set_neg(&P->z,&A->z);
 }
 /*---------------------------------random--------------------------------*/
 void Fp6_random(struct Fp6 *P,gmp_randstate_t state){
-    Fp2_random(&P->x0,state);
-    Fp2_random(&P->x1,state);
-    Fp2_random(&P->x2,state);
+    Fp2_random(&P->x,state);
+    Fp2_random(&P->y,state);
+    Fp2_random(&P->z,state);
 }
 /*---------------------------------clear---------------------------------*/
 void Fp6_clear(struct Fp6 *P){
-    Fp2_clear(&P->x0);
-    Fp2_clear(&P->x1);
-    Fp2_clear(&P->x2);
+    Fp2_clear(&P->x);
+    Fp2_clear(&P->y);
+    Fp2_clear(&P->z);
 }
 /*---------------------------------print---------------------------------*/
 void Fp6_printf(struct Fp6 *P,char *name){
     printf("%s",name);
     printf("(");
-    Fp2_printf(&P->x0,"");
+    Fp2_printf(&P->x,"");
     printf(",");
-    Fp2_printf(&P->x1,"");
+    Fp2_printf(&P->y,"");
     printf(",");
-    Fp2_printf(&P->x2,"");
+    Fp2_printf(&P->z,"");
     printf(")");
 }
 /*---------------------------vector calculation--------------------------*/
@@ -669,26 +644,26 @@ void Fp6_mul(struct Fp6 *ANS,struct Fp6 *A,struct Fp6 *B){
     Fp2_init(&t2);
     
     //set
-    Fp2_mul(&tmp00,&A->x0,&B->x0);//x0*y0
-    Fp2_mul(&tmp11,&A->x1,&B->x1);//x1*y1
-    Fp2_mul(&tmp22,&A->x2,&B->x2);//x2*y2
+    Fp2_mul(&tmp00,&A->x,&B->x);//x0*y0
+    Fp2_mul(&tmp11,&A->y,&B->y);//x1*y1
+    Fp2_mul(&tmp22,&A->z,&B->z);//x2*y2
     
-    Fp2_add(&t0,&A->x0,&A->x1);//x0+x1
-    Fp2_add(&buf,&B->x0,&B->x1);//y0+y1
+    Fp2_add(&t0,&A->x,&A->y);//x0+x1
+    Fp2_add(&buf,&B->x,&B->y);//y0+y1
     Fp2_mul(&t0,&t0,&buf);//(x0+x1)(y0+y1)
     
-    Fp2_add(&t1,&A->x1,&A->x2);//x1+x2
-    Fp2_add(&buf,&B->x1,&B->x2);//y1+y2
+    Fp2_add(&t1,&A->y,&A->z);//x1+x2
+    Fp2_add(&buf,&B->y,&B->z);//y1+y2
     Fp2_mul(&t1,&t1,&buf);//(x1+x2)(y1+y2)
     
-    Fp2_add(&t2,&B->x0,&B->x2);//y2+y0
-    Fp2_add(&buf,&A->x0,&A->x2);//x2+x0
+    Fp2_add(&t2,&B->x,&B->z);//y2+y0
+    Fp2_add(&buf,&A->x,&A->z);//x2+x0
     Fp2_mul(&t2,&t2,&buf);//(x2+x0)(y2+y0)
     //x0
     Fp2_sub(&t1,&t1,&tmp11);
     Fp2_sub(&t1,&t1,&tmp22);//(x1+x2)(y1+y2)-x1y1-x2y2
     Fp2_mul_basis(&buf,&t1);
-    Fp2_add(&ANS->x0,&tmp00,&buf);
+    Fp2_add(&ANS->x,&tmp00,&buf);
     //x1
     Fp2_sub(&t0,&t0,&tmp00);
     Fp2_sub(&t0,&t0,&tmp11);
@@ -709,26 +684,26 @@ void Fp6_mul(struct Fp6 *ANS,struct Fp6 *A,struct Fp6 *B){
     Fp2_clear(&t2);
 }
 void Fp6_mul_ui(struct Fp6 *ANS,struct Fp6 *A,unsigned long int a){
-    Fp2_mul_ui(&ANS->x0,&A->x0,a);
-    Fp2_mul_ui(&ANS->x1,&A->x1,a);
-    Fp2_mul_ui(&ANS->x2,&A->x2,a);
+    Fp2_mul_ui(&ANS->x,&A->x,a);
+    Fp2_mul_ui(&ANS->y,&A->y,a);
+    Fp2_mul_ui(&ANS->z,&A->z,a);
 }
 void Fp6_mul_mpz(struct Fp6 *ANS,struct Fp6 *A,mpz_t a){
-    Fp2_mul_mpz(&ANS->x0,&A->x0,a);
-    Fp2_mul_mpz(&ANS->x1,&A->x1,a);
-    Fp2_mul_mpz(&ANS->x2,&A->x2,a);
+    Fp2_mul_mpz(&ANS->x,&A->x,a);
+    Fp2_mul_mpz(&ANS->y,&A->y,a);
+    Fp2_mul_mpz(&ANS->z,&A->z,a);
 }
 void Fp6_mul_basis(struct Fp6 *ANS,struct Fp6 *A){
     struct Fp6 tmp;
     Fp6_init(&tmp);
     Fp6_set(&tmp,A);
     
-    Fp_sub(&ANS->x0.x0,&tmp.x2.x0,&tmp.x2.x1);
-    Fp_add(&ANS->x0.x1,&tmp.x2.x0,&tmp.x2.x1);
-    Fp_set(&ANS->x1.x0,&tmp.x0.x0);
-    Fp_set(&ANS->x1.x1,&tmp.x0.x1);
-    Fp_set(&ANS->x2.x0,&tmp.x1.x0);
-    Fp_set(&ANS->x2.x1,&tmp.x1.x1);
+    Fp_sub(&ANS->x.x0,&tmp.x2.x0,&tmp.x2.x1);
+    Fp_add(&ANS->x.x1,&tmp.x2.x0,&tmp.x2.x1);
+    Fp_set(&ANS->y.x0,&tmp.x0.x0);
+    Fp_set(&ANS->y.x1,&tmp.x0.x1);
+    Fp_set(&ANS->z.x0,&tmp.x1.x0);
+    Fp_set(&ANS->z.x1,&tmp.x1.x1);
     
     Fp6_clear(&tmp);
 }
@@ -740,26 +715,26 @@ void Fp6_squaring(struct Fp6 *ANS,struct Fp6 *A){
     Fp2_init(&tmp01_2);
     Fp2_init(&buf);
     
-    Fp2_squaring(&tmp00,&A->x0);		//x0^2
-    Fp2_squaring(&tmp22,&A->x2);		//x2^2
-    Fp2_add(&buf,&A->x1,&A->x1);		//2x1
-    Fp2_mul(&tmp12_2,&buf,&A->x2);	//2x1x2
-    Fp2_mul(&tmp01_2,&A->x0,&buf);	//2x0x1
-    Fp2_add(&buf,&A->x0,&A->x1);		//x0+x1+x2
-    Fp2_add(&buf,&buf,&A->x2);
+    Fp2_squaring(&tmp00,&A->x);		//x0^2
+    Fp2_squaring(&tmp22,&A->z);		//x2^2
+    Fp2_add(&buf,&A->y,&A->y);		//2x1
+    Fp2_mul(&tmp12_2,&buf,&A->z);	//2x1x2
+    Fp2_mul(&tmp01_2,&A->x,&buf);	//2x0x1
+    Fp2_add(&buf,&A->x,&A->y);		//x0+x1+x2
+    Fp2_add(&buf,&buf,&A->z);
     
     //x0
-    Fp2_mul_basis(&ANS->x0,&tmp12_2);
-    Fp2_add(&ANS->x0,&ANS->x0,&tmp00);
+    Fp2_mul_basis(&ANS->x,&tmp12_2);
+    Fp2_add(&ANS->x,&ANS->x,&tmp00);
     //x1
-    Fp2_mul_basis(&ANS->x1,&tmp22);
-    Fp2_add(&ANS->x1,&ANS->x1,&tmp01_2);
+    Fp2_mul_basis(&ANS->y,&tmp22);
+    Fp2_add(&ANS->y,&ANS->y,&tmp01_2);
     //x2
-    Fp2_squaring(&ANS->x2,&buf);
+    Fp2_squaring(&ANS->z,&buf);
     Fp2_add(&buf,&tmp00,&tmp22);
     Fp2_add(&buf,&buf,&tmp12_2);
     Fp2_add(&buf,&buf,&tmp01_2);
-    Fp2_sub(&ANS->x2,&ANS->x2,&buf);
+    Fp2_sub(&ANS->z,&ANS->z,&buf);
     
     Fp2_clear(&tmp00);
     Fp2_clear(&tmp22);
@@ -767,74 +742,32 @@ void Fp6_squaring(struct Fp6 *ANS,struct Fp6 *A){
     Fp2_clear(&tmp01_2);
     Fp2_clear(&buf);
 }
-void Fp6_add(struct Fp6 *ANS,struct Fp6 *A,struct Fp6 *B){
-    Fp2_add(&ANS->x0,&A->x0,&B->x0);
-    Fp2_add(&ANS->x1,&A->x1,&B->x1);
-    Fp2_add(&ANS->x2,&A->x2,&B->x2);
-}
-void Fp6_add_ui(struct Fp6 *ANS,struct Fp6 *A,unsigned long int a){
-    Fp2_add_ui(&ANS->x0,&A->x0,a);
-    Fp2_add_ui(&ANS->x1,&A->x1,a);
-    Fp2_add_ui(&ANS->x2,&A->x2,a);
-}
-void Fp6_add_mpz(struct Fp6 *ANS,struct Fp6 *A,mpz_t a){
-    Fp2_add_mpz(&ANS->x0,&A->x0,a);
-    Fp2_add_mpz(&ANS->x1,&A->x1,a);
-    Fp2_add_mpz(&ANS->x2,&A->x2,a);
-}
-void Fp6_sub(struct Fp6 *ANS,struct Fp6 *A,struct Fp6 *B){
-    Fp2_sub(&ANS->x0,&A->x0,&B->x0);
-    Fp2_sub(&ANS->x1,&A->x1,&B->x1);
-    Fp2_sub(&ANS->x2,&A->x2,&B->x2);
-}
-void Fp6_sub_ui(struct Fp6 *ANS,struct Fp6 *A,unsigned long int a){
-    Fp2_sub_ui(&ANS->x0,&A->x0,a);
-    Fp2_sub_ui(&ANS->x1,&A->x1,a);
-    Fp2_sub_ui(&ANS->x2,&A->x2,a);
-}
-void Fp6_sub_mpz(struct Fp6 *ANS,struct Fp6 *A,mpz_t a){
-    Fp2_sub_mpz(&ANS->x0,&A->x0,a);
-    Fp2_sub_mpz(&ANS->x1,&A->x1,a);
-    Fp2_sub_mpz(&ANS->x2,&A->x2,a);
-}
-/*-------------------------------inverse--------------------------------*/
 void Fp6_inv(struct Fp6 *ANS,struct Fp6 *A){
-    struct Fp6 frob1,frob2,buf1, buf2;
-    Fp6_init(&frob1);
-    Fp6_init(&frob2);
-    Fp6_init(&buf1);
-    Fp6_init(&buf2);
+    struct Fp6 frob,buf;
+    Fp6_init(&frob);
+    Fp6_init(&buf);
     
-    Fp6_inv_map_1(&frob1,A);
-    Fp6_inv_map_2(&frob2,A);
-    Fp6_mul(&buf1,&frob1,&frob2);
-    Fp6_mul(&buf2,&buf1,A);
-    Fp2_inv(&buf2.x0,&buf2.x0);
-    Fp2_mul(&ANS->x0,&buf1.x0,&buf2.x0);
-    Fp2_mul(&ANS->x1,&buf1.x1,&buf2.x0);
-    Fp2_mul(&ANS->x2,&buf1.x2,&buf2.x0);
+    Fp6_inv_map(&frob,A);
+    Fp6_mul(&buf,A,&frob);
+    Fp_inv(&buf.x,&buf.x);
+    Fp6_mul_mpz(ANS,&frob,buf.x.x0);
     
-    Fp6_clear(&frob1);
-    Fp6_clear(&frob2);
-    Fp6_clear(&buf1);
-    Fp6_clear(&buf2);
+    Fp6_clear(&frob);
+    Fp6_clear(&buf);
 }
-void Fp6_inv_map_1(struct Fp6 *ANS,struct Fp6 *A){
-    Fp2_set(&ANS->x0,&A->x0);
-    Fp2_mul_mpz(&ANS->x1,&A->x1,inv_CNR1.x0);
-    Fp2_mul_mpz(&ANS->x2,&A->x2,inv_CNR2.x0);
+void Fp6_inv_map(struct Fp6 *ANS,struct Fp6 *A){
+    Fp_set(&ANS->x.x0,&A->x.x0);
+    Fp_set_neg(&ANS->x.x1,&A->x.x1);
+    Fp_set_neg(&ANS->y.x0,&A->y.x0);
+    Fp_set(&ANS->y.x1,&A->y.x1);
 }
-void Fp6_inv_map_2(struct Fp6 *ANS,struct Fp6 *A){
-    Fp2_set(&ANS->x0,&A->x0);
-    Fp2_mul_mpz(&ANS->x1,&A->x1,inv_CNR2.x0);
-    Fp2_mul_mpz(&ANS->x2,&A->x2,inv_CNR1.x0);
-}
-/*-------------------------------legendre-------------------------------*/
+/*------------------------------legendre-------------------------------*/
 int Fp6_legendre(struct Fp6 *A){
-    mpz_t exp;		mpz_init(exp);
     struct Fp6 buf;
     Fp6_init(&buf);
     
+    mpz_t exp;
+    mpz_init(exp);
     mpz_pow_ui(exp,prime,6);
     mpz_sub_ui(exp,exp,1);
     mpz_tdiv_q_ui(exp,exp,2);
@@ -928,31 +861,31 @@ void Fp6_pow(struct Fp6 *ANS,struct Fp6 *A,mpz_t a){
 }
 /*---------------------------------cmp----------------------------------*/
 int Fp6_cmp(struct Fp6 *A,struct Fp6 *B){
-    if(Fp2_cmp(&A->x0,&B->x0)==0 && Fp2_cmp(&A->x1,&B->x1)==0 && Fp2_cmp(&A->x2,&B->x2)==0){
+    if(Fp_cmp(&A->x0,&B->x0)==0 && Fp_cmp(&A->x1,&B->x1)==0 && Fp_cmp(&A->x2,&B->x2)==0){
         return 0;
     }
     return 1;
 }
 int Fp6_cmp_ui(struct Fp6 *A,unsigned long int a){
-    if(Fp2_cmp_ui(&A->x0,a)==0 && Fp2_cmp_ui(&A->x1,a)==0 && Fp2_cmp_ui(&A->x2,a)==0){
+    if(Fp_cmp_ui(&A->x0,a)==0 && Fp_cmp_ui(&A->x1,a)==0 && Fp_cmp_ui(&A->x2,a)==0){
         return 0;
     }
     return 1;
 }
 int Fp6_cmp_mpz(struct Fp6 *A,mpz_t a){
-    if(Fp2_cmp_mpz(&A->x0,a)==0 && Fp2_cmp_mpz(&A->x1,a)==0 && Fp2_cmp_mpz(&A->x2,a)==0){
+    if(Fp_cmp_mpz(&A->x0,a)==0 && Fp_cmp_mpz(&A->x1,a)==0 && Fp_cmp_mpz(&A->x2,a)==0){
         return 0;
     }
     return 1;
 }
 int Fp6_cmp_zero(struct Fp6 *A){
-    if(Fp2_cmp_zero(&A->x0)==0 && Fp2_cmp_zero(&A->x1)==0 && Fp2_cmp_zero(&A->x2)==0){
+    if(Fp_cmp_zero(&A->x0)==0 && Fp_cmp_zero(&A->x1)==0 && Fp_cmp_zero(&A->x2)==0){
         return 0;
     }
     return 1;
 }
 int Fp6_cmp_one(struct Fp6 *A){
-    if(Fp2_cmp_one(&A->x0)==0 && Fp2_cmp_zero(&A->x1)==0 && Fp2_cmp_zero(&A->x2)==0){
+    if(Fp_cmp_one(&A->x0)==0 && Fp_cmp_zero(&A->x1)==0 && Fp_cmp_zero(&A->x2)==0){
         return 0;
     }
     return 1;
@@ -981,9 +914,7 @@ void Fp6_frobenius_1(struct Fp6 *ANS,struct Fp6 *A){
     Fp_clear(&tmp);
 }
 void Fp6_frobenius_2(struct Fp6 *ANS,struct Fp6 *A){
-    Fp2_set(&ANS->x0,&A->x0);
-    Fp2_mul_mpz(&ANS->x1,&A->x1,Fp2_basis_prime_2_div_3_1.x0.x0);
-    Fp2_mul_mpz(&ANS->x2,&A->x2,Fp2_basis_prime_2_div_3_2.x0.x0);
+    Fp6_set(ANS,A);
 }
 void Fp6_frobenius_3(struct Fp6 *ANS,struct Fp6 *A){
     struct Fp tmp;
@@ -1003,65 +934,59 @@ void Fp6_frobenius_3(struct Fp6 *ANS,struct Fp6 *A){
     Fp_clear(&tmp);
 }
 void Fp6_frobenius_4(struct Fp6 *ANS,struct Fp6 *A){
-    Fp2_set(&ANS->x0,&A->x0);
-    Fp2_mul_mpz(&ANS->x1,&A->x1,Fp2_basis_prime_4_div_3_1.x0.x0);
-    Fp2_mul_mpz(&ANS->x2,&A->x2,Fp2_basis_prime_4_div_3_2.x0.x0);
+    Fp6_set(ANS,A);
 }
 void Fp6_frobenius_6(struct Fp6 *ANS,struct Fp6 *A){
     Fp6_set(ANS,A);
 }
 void Fp6_frobenius_8(struct Fp6 *ANS,struct Fp6 *A){
-    Fp2_set(&ANS->x0,&A->x0);
-    Fp2_mul_mpz(&ANS->x1,&A->x1,Fp2_basis_prime_8_div_3_1.x0.x0);
-    Fp2_mul_mpz(&ANS->x2,&A->x2,Fp2_basis_prime_8_div_3_2.x0.x0);
+    Fp6_set(ANS,A);
 }
 void Fp6_frobenius_10(struct Fp6 *ANS,struct Fp6 *A){
-    Fp2_set(&ANS->x0,&A->x0);
-    Fp2_mul_mpz(&ANS->x1,&A->x1,Fp2_basis_prime_10_div_3_1.x0.x0);
-    Fp2_mul_mpz(&ANS->x2,&A->x2,Fp2_basis_prime_10_div_3_2.x0.x0);
+    Fp6_set(ANS,A);
 }
 /*============================================================================*/
 /* Fp12                                                                       */
 /*============================================================================*/
 /*---------------------------------init---------------------------------*/
 void Fp12_init(struct Fp12 *P){
-    Fp6_init(&P->x0);
-    Fp6_init(&P->x1);
+    Fp6_init(&P->x);
+    Fp6_init(&P->y);
 }
 /*---------------------------------set----------------------------------*/
 void Fp12_set(struct Fp12 *P,struct Fp12 *A){
-    Fp6_set(&P->x0,&A->x0);
-    Fp6_set(&P->x1,&A->x1);
+    Fp6_set(&P->x,&A->x);
+    Fp6_set(&P->y,&A->y);
 }
 void Fp12_set_ui(struct Fp12 *P,unsigned long int a){
-    Fp6_set_ui(&P->x0,a);
-    Fp6_set_ui(&P->x1,a);
+    Fp6_set_ui(&P->x,a);
+    Fp6_set_ui(&P->y,a);
 }
 void Fp12_set_mpz(struct Fp12 *P,mpz_t a){
-    Fp6_set_mpz(&P->x0,a);
-    Fp6_set_mpz(&P->x1,a);
+    Fp6_set_mpz(&P->x,a);
+    Fp6_set_mpz(&P->y,a);
 }
 void Fp12_set_neg(struct Fp12 *P,struct Fp12 *A){
-    Fp6_set_neg(&P->x0,&A->x0);
-    Fp6_set_neg(&P->x1,&A->x1);
+    Fp6_set_neg(&P->x,&A->x);
+    Fp6_set_neg(&P->y,&A->y);
 }
 /*---------------------------------random--------------------------------*/
 void Fp12_random(struct Fp12 *P,gmp_randstate_t state){
-    Fp6_random(&P->x0,state);
-    Fp6_random(&P->x1,state);
+    Fp6_random(&P->x,state);
+    Fp6_random(&P->y,state);
 }
 /*---------------------------------clear---------------------------------*/
 void Fp12_clear(struct Fp12 *P){
-    Fp6_clear(&P->x0);
-    Fp6_clear(&P->x1);
+    Fp6_clear(&P->x);
+    Fp6_clear(&P->y);
 }
 /*---------------------------------print---------------------------------*/
 void Fp12_printf(struct Fp12 *P,char *name){
     printf("%s",name);
     printf("(");
-    Fp6_printf(&P->x0,"");
+    Fp6_printf(&P->x,"");
     printf(",");
-    Fp6_printf(&P->x1,"");
+    Fp6_printf(&P->y,"");
     printf(")");
 }
 /*---------------------------vector calculation--------------------------*/
@@ -1088,12 +1013,12 @@ void Fp12_mul(struct Fp12 *ANS,struct Fp12 *A,struct Fp12 *B){
     Fp6_clear(&tmp2);
 }
 void Fp12_mul_ui(struct Fp12 *ANS,struct Fp12 *A,unsigned long int a){
-    Fp6_mul_ui(&ANS->x0,&A->x0,a);
-    Fp6_mul_ui(&ANS->x1,&A->x1,a);
+    Fp6_mul_ui(&ANS->x,&A->x,a);
+    Fp6_mul_ui(&ANS->y,&A->y,a);
 }
 void Fp12_mul_mpz(struct Fp12 *ANS,struct Fp12 *A,mpz_t a){
-    Fp6_mul_mpz(&ANS->x0,&A->x0,a);
-    Fp6_mul_mpz(&ANS->x1,&A->x1,a);
+    Fp6_mul_mpz(&ANS->x,&A->x,a);
+    Fp6_mul_mpz(&ANS->y,&A->y,a);
 }
 void Fp12_squaring(struct Fp12 *ANS,struct Fp12 *A){
     struct Fp6 tmp1,tmp2,tmp3;
@@ -1101,10 +1026,10 @@ void Fp12_squaring(struct Fp12 *ANS,struct Fp12 *A){
     Fp6_init(&tmp2);
     Fp6_init(&tmp3);
     
-    Fp6_add(&tmp1,&A->x0,&A->x1);
-    Fp6_mul_basis(&tmp2,&A->x1);
-    Fp6_add(&tmp2,&tmp2,&A->x0);
-    Fp6_mul(&tmp3,&A->x0,&A->x1);
+    Fp6_add(&tmp1,&A->x,&A->y);
+    Fp6_mul_basis(&tmp2,&A->y);
+    Fp6_add(&tmp2,&tmp2,&A->x);
+    Fp6_mul(&tmp3,&A->x,&A->y);
     
     //x0
     Fp6_mul(&ANS->x0,&tmp1,&tmp2);
@@ -1118,31 +1043,6 @@ void Fp12_squaring(struct Fp12 *ANS,struct Fp12 *A){
     Fp6_clear(&tmp2);
     Fp6_clear(&tmp3);
 }
-void Fp12_add(struct Fp12 *ANS,struct Fp12 *A,struct Fp12 *B){
-    Fp6_add(&ANS->x0,&A->x0,&B->x0);
-    Fp6_add(&ANS->x1,&A->x1,&B->x1);
-}
-void Fp12_add_ui(struct Fp12 *ANS,struct Fp12 *A,unsigned long int a){
-    Fp6_add_ui(&ANS->x0,&A->x0,a);
-    Fp6_add_ui(&ANS->x1,&A->x1,a);
-}
-void Fp12_add_mpz(struct Fp12 *ANS,struct Fp12 *A,mpz_t a){
-    Fp6_add_mpz(&ANS->x0,&ANS->x0,a);
-    Fp6_add_mpz(&ANS->x1,&ANS->x1,a);
-}
-void Fp12_sub(struct Fp12 *ANS,struct Fp12 *A,struct Fp12 *B){
-    Fp6_sub(&ANS->x0,&A->x0,&B->x0);
-    Fp6_sub(&ANS->x1,&A->x1,&B->x1);
-}
-void Fp12_sub_ui(struct Fp12 *ANS,struct Fp12 *A,unsigned long int a){
-    Fp6_sub_ui(&ANS->x0,&ANS->x0,a);
-    Fp6_sub_ui(&ANS->x1,&ANS->x1,a);
-}
-void Fp12_sub_mpz(struct Fp12 *ANS,struct Fp12 *A,mpz_t a){
-    Fp6_sub_mpz(&ANS->x0,&ANS->x0,a);
-    Fp6_sub_mpz(&ANS->x1,&ANS->x1,a);
-}
-/*------------------------------inverse---------------------------------*/
 void Fp12_inv(struct Fp12 *ANS,struct Fp12 *A){
     struct Fp12 frob,buf;
     Fp12_init(&frob);
@@ -1150,16 +1050,16 @@ void Fp12_inv(struct Fp12 *ANS,struct Fp12 *A){
     
     Fp12_inv_map(&frob,A);
     Fp12_mul(&buf,A,&frob);
-    Fp6_inv(&buf.x0,&buf.x0);
-    Fp6_mul(&ANS->x0,&frob.x0,&buf.x0);
-    Fp6_mul(&ANS->x1,&frob.x1,&buf.x0);
+    Fp6_inv(&buf.x,&buf.x);
+    Fp6_mul(&ANS->x,&frob.x,&buf.x);
+    Fp6_mul(&ANS->y,&frob.y,&buf.x);
     
     Fp12_clear(&frob);
     Fp12_clear(&buf);
 }
 void Fp12_inv_map(struct Fp12 *ANS,struct Fp12 *A){
-    Fp6_set(&ANS->x0,&A->x0);
-    Fp6_set_neg(&ANS->x1,&A->x1);
+    Fp6_set(&ANS->x,&A->x);
+    Fp6_set_neg(&ANS->y,&A->y);
 }
 /*-------------------------------legendre-------------------------------*/
 int Fp12_legendre(struct Fp12 *A){
@@ -1276,35 +1176,33 @@ void Fp12_pow(struct Fp12 *ANS,struct Fp12 *A,mpz_t a){
     Fp12_set(ANS,&buf);
     Fp12_clear(&buf);
 }
-
-
 /*---------------------------------cmp----------------------------------*/
 int Fp12_cmp(struct Fp12 *A,struct Fp12 *B){
-    if(Fp6_cmp(&A->x0,&B->x0)==0 && Fp6_cmp(&A->x1,&B->x1)==0){
+    if(Fp6_cmp(&A->x,&B->x)==0 && Fp6_cmp(&A->y,&B->y)==0){
         return 0;
     }
     return 1;
 }
 int Fp12_cmp_ui(struct Fp12 *A,unsigned long int a){
-    if(Fp6_cmp_ui(&A->x0,a)==0 && Fp6_cmp_ui(&A->x1,a)==0){
+    if(Fp6_cmp_ui(&A->x,a)==0 && Fp6_cmp_ui(&A->y,a)==0){
         return 0;
     }
     return 1;
 }
 int Fp12_cmp_mpz(struct Fp12 *A,mpz_t a){
-    if(Fp6_cmp_mpz(&A->x0,a)==0 && Fp6_cmp_mpz(&A->x1,a)==0){
+    if(Fp6_cmp_mpz(&A->x,a)==0 && Fp6_cmp_mpz(&A->y,a)==0){
         return 0;
     }
     return 1;
 }
 int Fp12_cmp_zero(struct Fp12 *A){
-    if(Fp6_cmp_zero(&A->x0)==0 && Fp6_cmp_zero(&A->x1)==0){
+    if(Fp6_cmp_zero(&A->x)==0 && Fp6_cmp_zero(&A->y)==0){
         return 0;
     }
     return 1;
 }
 int Fp12_cmp_one(struct Fp12 *A){
-    if(Fp6_cmp_one(&A->x0)==0 && Fp6_cmp_zero(&A->x1)==0){
+    if(Fp6_cmp_one(&A->x)==0 && Fp6_cmp_zero(&A->y)==0){
         return 0;
     }
     return 1;
@@ -1340,91 +1238,55 @@ void Fp12_frobenius_1(struct Fp12 *ANS,struct Fp12 *A){
     Fp_set(&ANS->x1.x1.x1,&tmp);
     Fp2_mul_mpz(&ANS->x1.x1,&ANS->x1.x1,Fp2_basis_prime_1_div_3_1.x1.x0);
     
-    Fp2_mul(&ANS->x1.x1,&ANS->x1.x1,&Fp2_basis_prime_1_div_6);
     Fp_set(&ANS->x1.x2.x0,&A->x1.x2.x0);
     Fp_set_neg(&ANS->x1.x2.x1,&A->x1.x2.x1);
-    Fp2_mul_mpz(&ANS->x1.x2,&ANS->x1.x2,Fp2_basis_prime_1_div_3_2.x0.x0);
     Fp2_mul(&ANS->x1.x2,&ANS->x1.x2,&Fp2_basis_prime_1_div_6);
+    
+    //x2
+    Fp_set(&ANS->x2.x0.x0,&A->x2.x0.x0);
+    Fp_set_neg(&ANS->x2.x0.x1,&A->x2.x0.x1);
+    Fp_set(&tmp,&A->x2.x1.x0);
+    Fp_set(&ANS->x2.x1.x0,&A->x2.x1.x1);
+    Fp_set(&ANS->x2.x1.x1,&tmp);
+    Fp2_mul_mpz(&ANS->x2.x1,&ANS->x2.x1,Fp2_basis_prime_1_div_3_1.x1.x0);
+    
+    Fp_set(&ANS->x2.x2.x0,&A->x2.x2.x0);
+    Fp_set_neg(&ANS->x2.x2.x1,&A->x2.x2.x1);
+    Fp2_mul_mpz(&ANS->x2.x2,&ANS->x2.x2,Fp2_basis_prime_1_div_3_2.x0.x0);
     
     Fp_clear(&tmp);
 }
 void Fp12_frobenius_2(struct Fp12 *ANS,struct Fp12 *A){
-    //x0
-    Fp2_set(&ANS->x0.x0,&A->x0.x0);
-    Fp2_mul_mpz(&ANS->x0.x1,&A->x0.x1,Fp2_basis_prime_2_div_3_1.x0.x0);
-    Fp2_mul_mpz(&ANS->x0.x2,&A->x0.x2,Fp2_basis_prime_2_div_3_2.x0.x0);
-    //x1
-    Fp2_mul_mpz(&ANS->x1.x0,&A->x1.x0,Fp2_basis_prime_2_div_6.x0.x0);
-    Fp2_mul_mpz(&ANS->x1.x1,&A->x1.x1,Fp2_basis_prime_2_div_3_1.x0.x0);
-    Fp2_mul_mpz(&ANS->x1.x1,&ANS->x1.x1,Fp2_basis_prime_2_div_6.x0.x0);
-    Fp2_mul_mpz(&ANS->x1.x2,&A->x1.x2,Fp2_basis_prime_2_div_3_2.x0.x0);
-    Fp2_mul_mpz(&ANS->x1.x2,&ANS->x1.x2,Fp2_basis_prime_2_div_6.x0.x0);
+    Fp12_set(ANS,A);
 }
 void Fp12_frobenius_3(struct Fp12 *ANS,struct Fp12 *A){
     struct Fp tmp;
     Fp_init(&tmp);
     
     //x0
-    Fp_set(&ANS->x0.x0.x0,&A->x0.x0.x0);
-    Fp_set_neg(&ANS->x0.x0.x1,&A->x0.x0.x1);
-    Fp_set(&tmp,&A->x0.x1.x0);
-    Fp_set(&ANS->x0.x1.x0,&A->x0.x1.x1);
-    Fp_set(&ANS->x0.x1.x1,&tmp);
-    Fp_set_neg(&ANS->x0.x2.x0,&A->x0.x2.x0);
-    Fp_set(&ANS->x0.x2.x1,&A->x0.x2.x1);
+    Fp_set(&ANS->x0.x0,&A->x0.x0);
+    Fp_set_neg(&ANS->x0.x1,&A->x0.x1);
     //x1
-    Fp_set(&ANS->x1.x0.x0,&A->x1.x0.x0);
-    Fp_set_neg(&ANS->x1.x0.x1,&A->x1.x0.x1);
-    Fp2_mul(&ANS->x1.x0,&ANS->x1.x0,&Fp2_basis_prime_3_div_6);
-    Fp_set(&tmp,&A->x1.x1.x0);
-    Fp_set(&ANS->x1.x1.x0,&A->x1.x1.x1);
-    Fp_set(&ANS->x1.x1.x1,&tmp);
-    Fp2_mul(&ANS->x1.x1,&ANS->x1.x1,&Fp2_basis_prime_3_div_6);
-    Fp_set_neg(&ANS->x1.x2.x0,&A->x1.x2.x0);
-    Fp_set(&ANS->x1.x2.x1,&A->x1.x2.x1);
-    Fp2_mul(&ANS->x1.x2,&ANS->x1.x2,&Fp2_basis_prime_3_div_6);
+    Fp_set(&tmp,&A->x1.x0);
+    Fp_set(&ANS->x1.x0,&A->x1.x1);
+    Fp_set(&ANS->x1.x1,&tmp);
+    //x2
+    Fp_set_neg(&ANS->x2.x0,&A->x2.x0);
+    Fp_set(&ANS->x2.x1,&A->x2.x1);
     
     Fp_clear(&tmp);
 }
 void Fp12_frobenius_4(struct Fp12 *ANS,struct Fp12 *A){
-    //x0
-    Fp2_set(&ANS->x0.x0,&A->x0.x0);
-    Fp2_mul_mpz(&ANS->x0.x1,&A->x0.x1,Fp2_basis_prime_4_div_3_1.x0.x0);
-    Fp2_mul_mpz(&ANS->x0.x2,&A->x0.x2,Fp2_basis_prime_4_div_3_2.x0.x0);
-    //x1
-    Fp2_mul_mpz(&ANS->x1.x0,&A->x1.x0,Fp2_basis_prime_4_div_6.x0.x0);
-    Fp2_set(&ANS->x1.x1,&A->x1.x1);
-    Fp2_mul_mpz(&ANS->x1.x2,&A->x1.x2,Fp2_basis_prime_4_div_3_2.x0.x0);
-    Fp2_mul_mpz(&ANS->x1.x2,&ANS->x1.x2,Fp2_basis_prime_4_div_6.x0.x0);
+    Fp12_set(ANS,A);
 }
 void Fp12_frobenius_6(struct Fp12 *ANS,struct Fp12 *A){
-    //x0
-    Fp6_set(&ANS->x0,&A->x0);
-    //x1
-    Fp6_set_neg(&ANS->x1,&A->x1);
+    Fp12_set(ANS,A);
 }
 void Fp12_frobenius_8(struct Fp12 *ANS,struct Fp12 *A){
-    //x0
-    Fp2_set(&ANS->x0.x0,&A->x0.x0);
-    Fp2_mul_mpz(&ANS->x0.x1,&A->x0.x1,Fp2_basis_prime_8_div_3_1.x0.x0);
-    Fp2_mul_mpz(&ANS->x0.x2,&A->x0.x2,Fp2_basis_prime_8_div_3_2.x0.x0);
-    //x1
-    Fp2_mul_mpz(&ANS->x1.x0,&A->x1.x0,Fp2_basis_prime_8_div_6.x0.x0);
-    Fp2_set(&ANS->x1.x1,&A->x1.x1);
-    Fp2_mul_mpz(&ANS->x1.x2,&A->x1.x2,Fp2_basis_prime_8_div_3_2.x0.x0);
-    Fp2_mul_mpz(&ANS->x1.x2,&ANS->x1.x2,Fp2_basis_prime_8_div_6.x0.x0);
+    Fp12_set(ANS,A);
 }
 void Fp12_frobenius_10(struct Fp12 *ANS,struct Fp12 *A){
-    //x0
-    Fp2_set(&ANS->x0.x0,&A->x0.x0);
-    Fp2_mul_mpz(&ANS->x0.x1,&A->x0.x1,Fp2_basis_prime_10_div_3_1.x0.x0);
-    Fp2_mul_mpz(&ANS->x0.x2,&A->x0.x2,Fp2_basis_prime_10_div_3_2.x0.x0);
-    //x1
-    Fp2_mul_mpz(&ANS->x1.x0,&A->x1.x0,Fp2_basis_prime_10_div_6.x0.x0);
-    Fp2_mul_mpz(&ANS->x1.x1,&A->x1.x1,Fp2_basis_prime_10_div_3_1.x0.x0);
-    Fp2_mul_mpz(&ANS->x1.x1,&ANS->x1.x1,Fp2_basis_prime_10_div_6.x0.x0);
-    Fp2_mul_mpz(&ANS->x1.x2,&A->x1.x2,Fp2_basis_prime_10_div_3_2.x0.x0);
-    Fp2_mul_mpz(&ANS->x1.x2,&ANS->x1.x2,Fp2_basis_prime_10_div_6.x0.x0);
+    Fp12_set(ANS,A);
 }
 /*============================================================================*/
 /* EFp                                                                        */
@@ -1681,7 +1543,7 @@ void EFp2_rational_point(struct EFp2 *P){
         Fp2_mul(&buf2,&buf1,&P->x);
         Fp2_mul_mpz(&buf1,&P->x,curve_parameter_A);
         Fp2_add(&R,&buf1,&buf2);
-        mpz_add(R.x0.x0,R.x0.x0,curve_parameter_B);
+        mpz_add(R.x0.x0,R.x0.x0.x0,curve_parameter_B);
         if(Fp2_legendre(&R)==1){
             Fp2_sqrt(&P->y,&R);
             break;
@@ -1718,7 +1580,6 @@ void EFp2_ECD(struct EFp2 *ANS,struct EFp2 *P){
     Fp2_squaring(&Buf1,&C);
     Fp2_mul_ui(&Buf2,&Tmp.x,2);
     Fp2_sub(&ANS->x,&Buf1,&Buf2);
-    
     Fp2_sub(&Buf1,&Tmp.x,&ANS->x);
     Fp2_mul(&Buf2,&C,&Buf1);
     Fp2_sub(&ANS->y,&Buf2,&Tmp.y);
@@ -1878,474 +1739,660 @@ void EFp2_skew_frobenius_10(struct EFp2 *ANS,struct EFp2 *A){
 void EFp6_init(struct EFp6 *P){
     Fp6_init(&P->x);
     Fp6_init(&P->y);
-    P->flag=0;
+    Fp6_init(&P->z);
 }
+/*---------------------------------set----------------------------------*/
 void EFp6_set(struct EFp6 *P,struct EFp6 *A){
     Fp6_set(&P->x,&A->x);
     Fp6_set(&P->y,&A->y);
-    P->flag=A->flag;
+    Fp6_set(&P->z,&A->z);
 }
 void EFp6_set_ui(struct EFp6 *P,unsigned long int a){
     Fp6_set_ui(&P->x,a);
     Fp6_set_ui(&P->y,a);
-    P->flag=0;
+    Fp6_set_ui(&P->z,a);
 }
 void EFp6_set_mpz(struct EFp6 *P,mpz_t a){
     Fp6_set_mpz(&P->x,a);
     Fp6_set_mpz(&P->y,a);
-    P->flag=0;
+    Fp6_set_mpz(&P->z,a);
 }
 void EFp6_set_neg(struct EFp6 *P,struct EFp6 *A){
     Fp6_set(&P->x,&A->x);
     Fp6_set_neg(&P->y,&A->y);
-    P->flag=A->flag;
+    Fp6_set_neg(&P->z,&A->z);
 }
-/*---------------------------------clear--------------------------------*/
+/*---------------------------------random--------------------------------*/
+void EFp6_random(struct EFp6 *P,gmp_randstate_t state){
+    Fp2_random(&P->x,state);
+    Fp2_random(&P->y,state);
+    Fp2_random(&P->z,state);
+}
+/*---------------------------------clear---------------------------------*/
 void EFp6_clear(struct EFp6 *P){
     Fp6_clear(&P->x);
     Fp6_clear(&P->y);
-}
-/*---------------------------------print--------------------------------*/
-void EFp6_printf(struct EFp6 *P,char *name){
-    printf("%s",name);
-    if(P->flag==0){
-        printf("(");
-        Fp6_printf(&P->x,"X");
-        printf(",");
-        Fp6_printf(&P->y,"Y");
-        printf(")");
-    }else{
-        printf("0");
-    }
-}
-/*-----------------------------rational point---------------------------*/
-void EFp6_rational_point(struct EFp6 *P){
-    struct Fp6 buf1,buf2,R;
-    Fp6_init(&buf1);
-    Fp6_init(&buf2);
-    Fp6_init(&R);
-    gmp_randstate_t state;
-    gmp_randinit_default(state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
-    
-    while(1){
-        Fp6_random(&P->x,state);
-        Fp6_mul(&buf1,&P->x,&P->x);
-        Fp6_mul(&buf2,&buf1,&P->x);
-        Fp6_mul_mpz(&buf1,&P->x,curve_parameter_A);
-        Fp6_add(&R,&buf1,&buf2);
-        mpz_add(R.x0.x0.x0,R.x0.x0.x0,curve_parameter_B);
-        if(Fp6_legendre(&R)==1){
-            Fp6_sqrt(&P->y,&R);
-            break;
-        }
-    }
-    
-    Fp6_clear(&buf1);
-    Fp6_clear(&buf2);
-    Fp6_clear(&R);
-}
-/*---------------------------------SCM----------------------------------*/
-void EFp6_ECD(struct EFp6 *ANS,struct EFp6 *P){
-    if(Fp6_cmp_zero(&P->y)==0){
-        ANS->flag=1;
-        return;
-    }
-    
-    struct EFp6 Tmp;
-    EFp6_init(&Tmp);
-    EFp6_set(&Tmp,P);
-    struct Fp6 Buf1,Buf2,C;
-    Fp6_init(&Buf1);
-    Fp6_init(&Buf2);
-    Fp6_init(&C);
-    
-    Fp6_mul_ui(&Buf1,&Tmp.y,2);
-    
-    Fp6_inv(&Buf1,&Buf1);
-    Fp6_mul(&Buf2,&Tmp.x,&Tmp.x);
-    Fp6_mul_ui(&Buf2,&Buf2,3);
-    mpz_add(Buf2.x0.x0.x0,Buf2.x0.x0.x0,curve_parameter_A);
-    Fp6_mul(&C,&Buf1,&Buf2);
-    Fp6_mul(&Buf1,&C,&C);
-    Fp6_mul_ui(&Buf2,&Tmp.x,2);
-    Fp6_sub(&ANS->x,&Buf1,&Buf2);
-    Fp6_sub(&Buf1,&Tmp.x,&ANS->x);
-    Fp6_mul(&Buf2,&C,&Buf1);
-    Fp6_sub(&ANS->y,&Buf2,&Tmp.y);
-    
-    Fp6_clear(&Buf1);
-    Fp6_clear(&Buf2);
-    Fp6_clear(&C);
-    EFp6_clear(&Tmp);
-}
-void EFp6_ECA(struct EFp6 *ANS,struct EFp6 *P1,struct EFp6 *P2){
-    if(P1->flag==1){
-        EFp6_set(ANS,P2);
-        return;
-    }else if(P2->flag==1){
-        EFp6_set(ANS,P1);
-        return;
-    }else if(Fp6_cmp(&P1->x,&P2->x)==0){
-        if(Fp6_cmp(&P1->y,&P2->y)!=0){
-            ANS->flag=1;
-            return;
-        }else{
-            EFp6_ECD(ANS,P1);
-            return;
-        }
-    }
-    
-    struct EFp6 Tmp1,Tmp2;
-    EFp6_init(&Tmp1);
-    EFp6_set(&Tmp1,P1);
-    EFp6_init(&Tmp2);
-    EFp6_set(&Tmp2,P2);
-    struct Fp6 Buf1,Buf2,C;
-    Fp6_init(&Buf1);
-    Fp6_init(&Buf2);
-    Fp6_init(&C);
-    
-    Fp6_sub(&Buf1,&Tmp2.x,&Tmp1.x);
-    Fp6_inv(&Buf1,&Buf1);
-    Fp6_sub(&Buf2,&Tmp2.y,&Tmp1.y);
-    Fp6_mul(&C,&Buf1,&Buf2);
-    Fp6_mul(&Buf1,&C,&C);
-    Fp6_sub(&Buf2,&Buf1,&Tmp1.x);
-    Fp6_sub(&ANS->x,&Buf2,&Tmp2.x);
-    Fp6_sub(&Buf1,&Tmp1.x,&ANS->x);
-    Fp6_mul(&Buf2,&C,&Buf1);
-    Fp6_sub(&ANS->y,&Buf2,&Tmp1.y);
-    
-    //clear
-    Fp6_clear(&Buf1);
-    Fp6_clear(&Buf2);
-    Fp6_clear(&C);
-    EFp6_clear(&Tmp1);
-    EFp6_clear(&Tmp2);
-}
-void EFp6_SCM(struct EFp6 *ANS,struct EFp6 *P,mpz_t R){
-    if(mpz_cmp_ui(R,0)==0){
-        ANS->flag=1;
-        return;
-    }else if(mpz_cmp_ui(R,1)==0){
-        EFp6_set(ANS,P);
-        return;
-    }
-    
-    struct EFp6 Tmp,next_P;
-    EFp6_init(&Tmp);
-    EFp6_set(&Tmp,P);
-    EFp6_init(&next_P);
-    int i,length;
-    length=(int)mpz_sizeinbase(R,2);
-    char binary[length];
-    mpz_get_str(binary,2,R);
-    mpz_t order,buf;
-    mpz_init(order);
-    mpz_init(buf);
-    
-    EFp6_set(&next_P,&Tmp);
-    for(i=1; binary[i]!='\0'; i++){
-        EFp6_ECD(&next_P,&next_P);
-        if(binary[i]=='1'){
-            EFp6_ECA(&next_P,&next_P,&Tmp);
-        }
-    }
-    
-    EFp6_set(ANS,&next_P);
-    
-    EFp6_clear(&next_P);
-    EFp6_clear(&Tmp);
-}
-/*-----------------------------frobenius--------------------------------*/
-void EFp6_frobenius_1(struct EFp6 *ANS,struct EFp6 *P){
-    Fp6_frobenius_1(&ANS->x,&P->x);
-    Fp6_frobenius_1(&ANS->y,&P->y);
-}
-void EFp6_frobenius_2(struct EFp6 *ANS,struct EFp6 *P){
-    Fp6_frobenius_2(&ANS->x,&P->x);
-    Fp6_frobenius_2(&ANS->y,&P->y);
-}
-void EFp6_frobenius_3(struct EFp6 *ANS,struct EFp6 *P){
-    Fp6_frobenius_3(&ANS->x,&P->x);
-    Fp6_frobenius_3(&ANS->y,&P->y);
-}
-void EFp6_frobenius_4(struct EFp6 *ANS,struct EFp6 *P){
-    Fp6_frobenius_4(&ANS->x,&P->x);
-    Fp6_frobenius_4(&ANS->y,&P->y);
-}
-void EFp6_frobenius_6(struct EFp6 *ANS,struct EFp6 *P){
-    Fp6_frobenius_6(&ANS->x,&P->x);
-    Fp6_frobenius_6(&ANS->y,&P->y);
-}
-void EFp6_frobenius_8(struct EFp6 *ANS,struct EFp6 *P){
-    Fp6_frobenius_8(&ANS->x,&P->x);
-    Fp6_frobenius_8(&ANS->y,&P->y);
-}
-void EFp6_frobenius_10(struct EFp6 *ANS,struct EFp6 *P){
-    Fp6_frobenius_10(&ANS->x,&P->x);
-    Fp6_frobenius_10(&ANS->y,&P->y);
-}
-/*============================================================================*/
-/* EFp12                                                                      */
-/*============================================================================*/
-/*---------------------------------init---------------------------------*/
-void EFp12_init(struct EFp12 *P){
-    Fp12_init(&P->x);
-    Fp12_init(&P->y);
-    P->flag=0;
-}
-/*---------------------------------set----------------------------------*/
-void EFp12_set(struct EFp12 *P,struct EFp12 *A){
-    Fp12_set(&P->x,&A->x);
-    Fp12_set(&P->y,&A->y);
-    P->flag=A->flag;
-}
-void EFp12_set_ui(struct EFp12 *P,unsigned long int a){
-    Fp12_set_ui(&P->x,a);
-    Fp12_set_ui(&P->y,a);
-    P->flag=0;
-}
-void EFp12_set_mpz(struct EFp12 *P,mpz_t a){
-    Fp12_set_mpz(&P->x,a);
-    Fp12_set_mpz(&P->y,a);
-    P->flag=0;
-}
-void EFp12_set_neg(struct EFp12 *P,struct EFp12 *A){
-    Fp12_set(&P->x,&A->x);
-    Fp12_set_neg(&P->y,&A->y);
-    P->flag=A->flag;
-}
-/*---------------------------------clear---------------------------------*/
-void EFp12_clear(struct EFp12 *P){
-    Fp12_clear(&P->x);
-    Fp12_clear(&P->y);
+    Fp6_clear(&P->z);
 }
 /*---------------------------------print---------------------------------*/
-void EFp12_printf(struct EFp12 *P,char *name){
+void EFp6_printf(struct EFp6 *P,char *name){
     printf("%s",name);
-    if(P->flag==0){
-        printf("(");
-        Fp12_printf(&P->x,"X");
-        printf("\n");
-        Fp12_printf(&P->y,"Y");
-        printf(")");
+    printf("(");
+    Fp2_printf(&P->x,"X");
+    printf(",");
+    Fp2_printf(&P->y,"Y");
+    printf(",");
+    Fp2_printf(&P->z,"Z");
+    printf(")");
+}
+/*---------------------------vector calculation--------------------------*/
+void EFp6_mul(struct EFp6 *ANS,struct EFp6 *A,struct EFp6 *B){
+    struct Fp2 tmp00,tmp11,tmp22,buf,t0,t1,t2;
+    Fp2_init(&tmp00);
+    Fp2_init(&tmp11);
+    Fp2_init(&tmp22);
+    Fp2_init(&buf);
+    Fp2_init(&t0);
+    Fp2_init(&t1);
+    Fp2_init(&t2);
+    
+    //set
+    Fp2_mul(&tmp00,&A->x,&B->x);//x0*y0
+    Fp2_mul(&tmp11,&A->y,&B->y);//x1*y1
+    Fp2_mul(&tmp22,&A->z,&B->z);//x2*y2
+    
+    Fp2_add(&t0,&A->x,&A->y);//x0+x1
+    Fp2_add(&buf,&B->x,&B->y);//y0+y1
+    Fp2_mul(&t0,&t0,&buf);//(x0+x1)(y0+y1)
+    
+    Fp2_add(&t1,&A->y,&A->z);//x1+x2
+    Fp2_add(&buf,&B->y,&B->z);//y1+y2
+    Fp2_mul(&t1,&t1,&buf);//(x1+x2)(y1+y2)
+    
+    Fp2_add(&t2,&B->x,&B->z);//y2+y0
+    Fp2_add(&buf,&A->x,&A->z);//x2+x0
+    Fp2_mul(&t2,&t2,&buf);//(x2+x0)(y2+y0)
+    //x0
+    Fp2_sub(&t1,&t1,&tmp11);
+    Fp2_sub(&t1,&t1,&tmp22);//(x1+x2)(y1+y2)-x1y1-x2y2
+    Fp2_mul_basis(&buf,&t1);
+    Fp2_add(&ANS->x,&tmp00,&buf);
+    //x1
+    Fp2_sub(&t0,&t0,&tmp00);
+    Fp2_sub(&t0,&t0,&tmp11);
+    Fp2_mul_basis(&buf,&tmp22);
+    Fp2_add(&ANS->y,&buf,&t0);
+    //x2
+    Fp2_sub(&t2,&t2,&tmp00);
+    Fp2_sub(&t2,&t2,&tmp22);
+    Fp2_add(&ANS->z,&tmp11,&t2);
+    
+    //clear
+    Fp2_clear(&tmp00);
+    Fp2_clear(&tmp11);
+    Fp2_clear(&tmp22);
+    Fp2_clear(&buf);
+    Fp2_clear(&t0);
+    Fp2_clear(&t1);
+    Fp2_clear(&t2);
+}
+void EFp6_mul_ui(struct EFp6 *ANS,struct EFp6 *A,unsigned long int a){
+    Fp2_mul_ui(&ANS->x,&A->x,a);
+    Fp2_mul_ui(&ANS->y,&A->y,a);
+    Fp2_mul_ui(&ANS->z,&A->z,a);
+}
+void EFp6_mul_mpz(struct EFp6 *ANS,struct EFp6 *A,mpz_t a){
+    Fp2_mul_mpz(&ANS->x,&A->x,a);
+    Fp2_mul_mpz(&ANS->y,&A->y,a);
+    Fp2_mul_mpz(&ANS->z,&A->z,a);
+}
+void EFp6_mul_basis(struct EFp6 *ANS,struct EFp6 *A){
+    struct Fp6 tmp;
+    Fp6_init(&tmp);
+    Fp6_set(&tmp,A);
+    
+    Fp_sub(&ANS->x.x0,&tmp.x2.x0,&tmp.x2.x1);
+    Fp_add(&ANS->x.x1,&tmp.x2.x0,&tmp.x2.x1);
+    Fp_set(&ANS->y.x0,&tmp.x0.x0);
+    Fp_set(&ANS->y.x1,&tmp.x0.x1);
+    Fp_set(&ANS->z.x0,&tmp.x1.x0);
+    Fp_set(&ANS->z.x1,&tmp.x1.x1);
+    
+    Fp6_clear(&tmp);
+}
+void EFp6_squaring(struct EFp6 *ANS,struct EFp6 *A){
+    struct Fp2 tmp00,tmp22,buf;
+    Fp2_init(&tmp00);
+    Fp2_init(&tmp22);
+    Fp2_init(&buf);
+    
+    Fp2_squaring(&tmp00,&A->x);		//x0^2
+    Fp2_squaring(&tmp22,&A->z);		//x2^2
+    Fp2_add(&buf,&A->y,&A->y);		//2x1
+    Fp2_mul(&buf,&buf,&A->z);		//2x1x2
+    
+    //x0
+    Fp2_mul_basis(&ANS->x,&buf);
+    Fp2_add(&ANS->x,&ANS->x,&tmp00);
+    //x1
+    Fp2_mul_basis(&ANS->y,&tmp22);
+    Fp2_add(&ANS->y,&ANS->y,&buf);
+    //x2
+    Fp2_squaring(&ANS->z,&A->y);
+    Fp2_add(&buf,&tmp00,&tmp22);
+    Fp2_add(&buf,&buf,&buf);
+    Fp2_sub(&ANS->z,&ANS->z,&buf);
+    
+    Fp2_clear(&tmp00);
+    Fp2_clear(&tmp22);
+    Fp2_clear(&buf);
+}
+void EFp6_inv(struct EFp6 *ANS,struct EFp6 *A){
+    struct Fp6 frob,buf;
+    Fp6_init(&frob);
+    Fp6_init(&buf);
+    
+    Fp6_inv_map(&frob,A);
+    Fp6_mul(&buf,A,&frob);
+    Fp_inv(&buf.x,&buf.x);
+    Fp6_mul(&ANS->x,&frob.x,&buf.x);
+    Fp6_mul(&ANS->y,&frob.y,&buf.x);
+    
+    Fp6_clear(&frob);
+    Fp6_clear(&buf);
+}
+void EFp6_inv_map(struct EFp6 *ANS,struct EFp6 *A){
+    Fp_set(&ANS->x.x0,&A->x.x0);
+    Fp_set_neg(&ANS->x.x1,&A->x.x1);
+    Fp_set_neg(&ANS->y.x0,&A->y.x0);
+    Fp_set(&ANS->y.x1,&A->y.x1);
+}
+/*------------------------------legendre-------------------------------*/
+int Fp6_legendre(struct Fp6 *A){
+    struct Fp6 buf;
+    Fp6_init(&buf);
+    
+    mpz_t exp;
+    mpz_init(exp);
+    mpz_pow_ui(exp,prime,6);
+    mpz_sub_ui(exp,exp,1);
+    mpz_tdiv_q_ui(exp,exp,2);
+    Fp6_pow(&buf,A,exp);
+    
+    mpz_clear(exp);
+    if(Fp6_cmp_one(&buf)==0){
+        Fp6_clear(&buf);
+        return 1;
+    }else if(Fp6_cmp_zero(&buf)==0){
+        Fp6_clear(&buf);
+        return 0;
     }else{
-        printf("0");
+        Fp6_clear(&buf);
+        return -1;
     }
 }
-/*-----------------------------rational point---------------------------*/
-void EFp12_rational_point(struct EFp12 *P){
-    struct Fp12 buf1,buf2,R;
-    Fp12_init(&buf1);
-    Fp12_init(&buf2);
-    Fp12_init(&R);
-    gmp_randstate_t state;
-    gmp_randinit_default(state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
-    
-    while(1){
-        Fp12_random(&P->x,state);
-        Fp12_squaring(&buf1,&P->x);
-        Fp12_mul(&buf2,&buf1,&P->x);
-        Fp12_mul_mpz(&buf1,&P->x,curve_parameter_A);
-        Fp12_add(&R,&buf1,&buf2);
-        mpz_add(R.x0.x0.x0.x0,R.x0.x0.x0.x0,curve_parameter_B);
-        if(Fp12_legendre(&R)==1){
-            Fp12_sqrt(&P->y,&R);
-            break;
-        }
-    }
-    
-    Fp12_clear(&buf1);
-    Fp12_clear(&buf2);
-    Fp12_clear(&R);
-}
-void EFp12_generate_G1(struct EFp12 *P){
-    struct EFp g1;
-    EFp_init(&g1);
-    
-    EFp_rational_point(&g1);
-    EFp12_set_ui(P,0);
-    Fp_set(&P->x.x0.x0.x0,&g1.x);
-    Fp_set(&P->y.x0.x0.x0,&g1.y);
-    P->flag=g1.flag;
-    
-    EFp_clear(&g1);
-}
-void EFp12_generate_G2(struct EFp12 *Q){
-    struct EFp12 random_P,P,frobenius_P;
-    EFp12_init(&random_P);
-    EFp12_init(&P);
-    EFp12_init(&frobenius_P);
+int Fp6_isCNR(struct Fp6 *A){
+    struct Fp6 buf;
+    Fp6_init(&buf);
     mpz_t exp;
     mpz_init(exp);
     
-    EFp12_rational_point(&random_P);
-    mpz_pow_ui(exp,EFp_order,2);
-    mpz_tdiv_q(exp,EFp12_total,exp);
-    EFp12_SCM(&P,&random_P,exp);
-    EFp12_frobenius_1(&frobenius_P,&P);
-    EFp12_set_neg(&P,&P);
-    EFp12_ECA(Q,&P,&frobenius_P);
+    mpz_pow_ui(exp,prime,6);
+    mpz_sub_ui(exp,exp,1);
+    mpz_tdiv_q_ui(exp,exp,3);
+    Fp6_pow(&buf,A,exp);
     
     mpz_clear(exp);
-    EFp12_clear(&random_P);
-    EFp12_clear(&P);
-    EFp12_clear(&frobenius_P);
-}
-/*---------------------------------SCM----------------------------------*/
-void EFp12_ECD(struct EFp12 *ANS,struct EFp12 *P){
-    if(Fp12_cmp_zero(&P->y)==0){
-        ANS->flag=1;
-        return;
+    if(Fp6_cmp_one(&buf)==0){
+        Fp6_clear(&buf);
+        return 1;
+    }else if(Fp6_cmp_zero(&buf)==0){
+        Fp6_clear(&buf);
+        return 0;
+    }else{
+        Fp6_clear(&buf);
+        return -1;
     }
-    
-    struct EFp12 Tmp;
-    EFp12_init(&Tmp);
-    EFp12_set(&Tmp,P);
-    struct Fp12 Buf1,Buf2,C;
-    Fp12_init(&Buf1);
-    Fp12_init(&Buf2);
-    Fp12_init(&C);
-    
-    Fp12_mul_ui(&Buf1,&Tmp.y,2);
-    Fp12_inv(&Buf1,&Buf1);
-    //Fp12_mul(&Buf2,&Tmp.x,&Tmp.x);
-    Fp12_squaring(&Buf2,&Tmp.x);
-    Fp12_mul_ui(&Buf2,&Buf2,3);
-    mpz_add(Buf2.x0.x0.x0.x0,Buf2.x0.x0.x0.x0,curve_parameter_A);
-    Fp12_mul(&C,&Buf1,&Buf2);
-    //Fp12_mul(&Buf1,&C,&C);
-    Fp12_squaring(&Buf1,&C);
-    Fp12_mul_ui(&Buf2,&Tmp.x,2);
-    Fp12_sub(&ANS->x,&Buf1,&Buf2);
-    Fp12_sub(&Buf1,&Tmp.x,&ANS->x);
-    Fp12_mul(&Buf2,&C,&Buf1);
-    Fp12_sub(&ANS->y,&Buf2,&Tmp.y);
-    
-    Fp12_clear(&Buf1);
-    Fp12_clear(&Buf2);
-    Fp12_clear(&C);
-    EFp12_clear(&Tmp);
 }
-void EFp12_ECA(struct EFp12 *ANS,struct EFp12 *P1,struct EFp12 *P2){
-    if(P1->flag==1){
-        EFp12_set(ANS,P2);
-        return;
-    }else if(P2->flag==1){
-        EFp12_set(ANS,P1);
-        return;
-    }else if(Fp12_cmp(&P1->x,&P2->x)==0){
-        if(Fp12_cmp(&P1->y,&P2->y)!=0){
-            ANS->flag=1;
-            return;
-        }else{
-            EFp12_ECD(ANS,P1);
-            return;
+/*---------------------------------sqr----------------------------------*/
+void Fp6_sqrt(struct Fp6 *ANS,struct Fp6 *A){
+    struct Fp6 buf1,buf2;
+    Fp6_init(&buf1);
+    Fp6_init(&buf2);
+    mpz_t exp,buf;
+    mpz_init(exp);
+    mpz_init(buf);
+    
+    Fp6_frobenius_4(&buf1,A);
+    Fp6_frobenius_2(&buf2,A);
+    Fp6_mul(&buf1,&buf1,&buf2);
+    Fp6_mul(&buf1,&buf1,A);
+    Fp6_set_ui(&buf2,0);
+    Fp2_sqrt(&buf2.x0,&buf1.x0);
+    Fp2_inv(&buf2.x0,&buf2.x0);
+    Fp2_set(&buf2.x0,&buf2.x0);
+    mpz_pow_ui(exp,prime,8);
+    mpz_pow_ui(buf,prime,4);
+    mpz_add(exp,exp,buf);
+    mpz_add_ui(exp,exp,2);
+    mpz_tdiv_q_ui(exp,exp,2);
+    Fp6_pow(&buf1,A,exp);
+    Fp6_mul(&buf1,&buf1,&buf2);
+    Fp6_set(ANS,&buf1);
+    
+    mpz_clear(exp);
+    mpz_clear(buf);
+    Fp6_clear(&buf1);
+    Fp6_clear(&buf2);
+}
+/*---------------------------------pow----------------------------------*/
+void Fp6_pow(struct Fp6 *ANS,struct Fp6 *A,mpz_t a){
+    int i,length;
+    length=(int)mpz_sizeinbase(a,2);
+    char binary[length];
+    mpz_get_str(binary,2,a);
+    struct Fp6 buf;
+    Fp6_init(&buf);
+    Fp6_set(&buf,A);
+    
+    for(i=1; binary[i]!='\0'; i++){
+        Fp6_squaring(&buf,&buf);
+        if(binary[i]=='1'){
+            Fp6_mul(&buf,A,&buf);
         }
     }
     
-    struct EFp12 Tmp1,Tmp2;
-    EFp12_init(&Tmp1);
-    EFp12_set(&Tmp1,P1);
-    EFp12_init(&Tmp2);
-    EFp12_set(&Tmp2,P2);
-    struct Fp12 Buf1,Buf2,C;
-    Fp12_init(&Buf1);
-    Fp12_init(&Buf2);
-    Fp12_init(&C);
+    Fp6_set(ANS,&buf);
+    Fp6_clear(&buf);
+}
+/*---------------------------------cmp----------------------------------*/
+int Fp6_cmp(struct Fp6 *A,struct Fp6 *B){
+    if(Fp_cmp(&A->x0,&B->x0)==0 && Fp_cmp(&A->x1,&B->x1)==0 && Fp_cmp(&A->x2,&B->x2)==0){
+        return 0;
+    }
+    return 1;
+}
+int Fp6_cmp_ui(struct Fp6 *A,unsigned long int a){
+    if(Fp_cmp_ui(&A->x0,a)==0 && Fp_cmp_ui(&A->x1,a)==0 && Fp_cmp_ui(&A->x2,a)==0){
+        return 0;
+    }
+    return 1;
+}
+int Fp6_cmp_mpz(struct Fp6 *A,mpz_t a){
+    if(Fp_cmp_mpz(&A->x0,a)==0 && Fp_cmp_mpz(&A->x1,a)==0 && Fp_cmp_mpz(&A->x2,a)==0){
+        return 0;
+    }
+    return 1;
+}
+int Fp6_cmp_zero(struct Fp6 *A){
+    if(Fp_cmp_zero(&A->x0)==0 && Fp_cmp_zero(&A->x1)==0 && Fp_cmp_zero(&A->x2)==0){
+        return 0;
+    }
+    return 1;
+}
+int Fp6_cmp_one(struct Fp6 *A){
+    if(Fp_cmp_one(&A->x0)==0 && Fp_cmp_zero(&A->x1)==0 && Fp_cmp_zero(&A->x2)==0){
+        return 0;
+    }
+    return 1;
+}
+/*--------------------------------frobenius--------------------------------*/
+void Fp6_frobenius_1(struct Fp6 *ANS,struct Fp6 *A){
+    struct Fp tmp;
+    Fp_init(&tmp);
     
-    Fp12_sub(&Buf1,&Tmp2.x,&Tmp1.x);
-    Fp12_inv(&Buf1,&Buf1);
-    Fp12_sub(&Buf2,&Tmp2.y,&Tmp1.y);
-    Fp12_mul(&C,&Buf1,&Buf2);
-    //Fp12_mul(&Buf1,&C,&C);
-    Fp12_squaring(&Buf1,&C);
-    Fp12_sub(&Buf2,&Buf1,&Tmp1.x);
-    Fp12_sub(&ANS->x,&Buf2,&Tmp2.x);
-    Fp12_sub(&Buf1,&Tmp1.x,&ANS->x);
-    Fp12_mul(&Buf2,&C,&Buf1);
-    Fp12_sub(&ANS->y,&Buf2,&Tmp1.y);
+    //x0
+    Fp_set(&ANS->x0.x0,&A->x0.x0);
+    Fp_set_neg(&ANS->x0.x1,&A->x0.x1);
+    //x1
+    //Fp_set(&ANS->x1.x0,&A->x1.x0);
+    //Fp_set_neg(&ANS->x1.x1,&A->x1.x1);
+    //Fp2_mul(&ANS->x1,&ANS->x1,&Fp2_basis_prime_1_div_3_1);	//can be efficient
+    Fp_set(&tmp,&A->x1.x0);
+    Fp_set(&ANS->x1.x0,&A->x1.x1);
+    Fp_set(&ANS->x1.x1,&tmp);
+    Fp2_mul_mpz(&ANS->x1,&ANS->x1,Fp2_basis_prime_1_div_3_1.x1.x0);
+    //x2
+    Fp_set(&ANS->x2.x0,&A->x2.x0);
+    Fp_set_neg(&ANS->x2.x1,&A->x2.x1);
+    Fp2_mul_mpz(&ANS->x2,&ANS->x2,Fp2_basis_prime_1_div_3_2.x0.x0);
+    
+    Fp_clear(&tmp);
+}
+void Fp6_frobenius_2(struct Fp6 *ANS,struct Fp6 *A){
+    Fp6_set(ANS,A);
+}
+void Fp6_frobenius_3(struct Fp6 *ANS,struct Fp6 *A){
+    struct Fp tmp;
+    Fp_init(&tmp);
+    
+    //x0
+    Fp_set(&ANS->x0.x0,&A->x0.x0);
+    Fp_set_neg(&ANS->x0.x1,&A->x0.x1);
+    //x1
+    Fp_set(&tmp,&A->x1.x0);
+    Fp_set(&ANS->x1.x0,&A->x1.x1);
+    Fp_set(&ANS->x1.x1,&tmp);
+    //x2
+    Fp_set_neg(&ANS->x2.x0,&A->x2.x0);
+    Fp_set(&ANS->x2.x1,&A->x2.x1);
+    
+    Fp_clear(&tmp);
+}
+void Fp6_frobenius_4(struct Fp6 *ANS,struct Fp6 *A){
+    Fp6_set(ANS,A);
+}
+void Fp6_frobenius_6(struct Fp6 *ANS,struct Fp6 *A){
+    Fp6_set(ANS,A);
+}
+void Fp6_frobenius_8(struct Fp6 *ANS,struct Fp6 *A){
+    Fp6_set(ANS,A);
+}
+void Fp6_frobenius_10(struct Fp6 *ANS,struct Fp6 *A){
+    Fp6_set(ANS,A);
+}
+/*============================================================================*/
+/* Fp12                                                                       */
+/*============================================================================*/
+/*---------------------------------init---------------------------------*/
+void Fp12_init(struct Fp12 *P){
+    Fp6_init(&P->x);
+    Fp6_init(&P->y);
+}
+/*---------------------------------set----------------------------------*/
+void Fp12_set(struct Fp12 *P,struct Fp12 *A){
+    Fp6_set(&P->x,&A->x);
+    Fp6_set(&P->y,&A->y);
+}
+void Fp12_set_ui(struct Fp12 *P,unsigned long int a){
+    Fp6_set_ui(&P->x,a);
+    Fp6_set_ui(&P->y,a);
+}
+void Fp12_set_mpz(struct Fp12 *P,mpz_t a){
+    Fp6_set_mpz(&P->x,a);
+    Fp6_set_mpz(&P->y,a);
+}
+void Fp12_set_neg(struct Fp12 *P,struct Fp12 *A){
+    Fp6_set_neg(&P->x,&A->x);
+    Fp6_set_neg(&P->y,&A->y);
+}
+/*---------------------------------random--------------------------------*/
+void Fp12_random(struct Fp12 *P,gmp_randstate_t state){
+    Fp6_random(&P->x,state);
+    Fp6_random(&P->y,state);
+}
+/*---------------------------------clear---------------------------------*/
+void Fp12_clear(struct Fp12 *P){
+    Fp6_clear(&P->x);
+    Fp6_clear(&P->y);
+}
+/*---------------------------------print---------------------------------*/
+void Fp12_printf(struct Fp12 *P,char *name){
+    printf("%s",name);
+    printf("(");
+    Fp6_printf(&P->x,"");
+    printf(",");
+    Fp6_printf(&P->y,"");
+    printf(")");
+}
+/*---------------------------vector calculation--------------------------*/
+void Fp12_mul(struct Fp12 *ANS,struct Fp12 *A,struct Fp12 *B){
+    struct Fp6 tmp1,tmp2;
+    Fp6_init(&tmp1);
+    Fp6_init(&tmp2);
+    
+    //set
+    Fp6_mul(&tmp2,&A->x1,&B->x1);//b*d
+    Fp6_add(&tmp1,&A->x0,&A->x1);//a+b
+    Fp6_add(&ANS->x1,&B->x0,&B->x1);//c+d
+    Fp6_mul(&ANS->x1,&tmp1,&ANS->x1);//(a+b)(c+d)
+    Fp6_mul(&tmp1,&A->x0,&B->x0);//a*c
+    //x0
+    Fp6_mul_basis(&ANS->x0,&tmp2);//b*d*v
+    Fp6_add(&ANS->x0,&ANS->x0,&tmp1);//a*c+b*d*v
+    //x1
+    Fp6_sub(&ANS->x1,&ANS->x1,&tmp1);
+    Fp6_sub(&ANS->x1,&ANS->x1,&tmp2);
     
     //clear
-    Fp12_clear(&Buf1);
-    Fp12_clear(&Buf2);
-    Fp12_clear(&C);
-    EFp12_clear(&Tmp1);
-    EFp12_clear(&Tmp2);
+    Fp6_clear(&tmp1);
+    Fp6_clear(&tmp2);
 }
-void EFp12_SCM(struct EFp12 *ANS,struct EFp12 *P,mpz_t R){
-    if(mpz_cmp_ui(R,0)==0){
-        ANS->flag=1;
-        return;
-    }else if(mpz_cmp_ui(R,1)==0){
-        EFp12_set(ANS,P);
-        return;
+void Fp12_mul_ui(struct Fp12 *ANS,struct Fp12 *A,unsigned long int a){
+    Fp6_mul_ui(&ANS->x,&A->x,a);
+    Fp6_mul_ui(&ANS->y,&A->y,a);
+}
+void Fp12_mul_mpz(struct Fp12 *ANS,struct Fp12 *A,mpz_t a){
+    Fp6_mul_mpz(&ANS->x,&A->x,a);
+    Fp6_mul_mpz(&ANS->y,&A->y,a);
+}
+void Fp12_squaring(struct Fp12 *ANS,struct Fp12 *A){
+    struct Fp6 tmp1,tmp2,tmp3;
+    Fp6_init(&tmp1);
+    Fp6_init(&tmp2);
+    Fp6_init(&tmp3);
+    
+    Fp6_add(&tmp1,&A->x,&A->y);
+    Fp6_mul_basis(&tmp2,&A->y);
+    Fp6_add(&tmp2,&tmp2,&A->x);
+    Fp6_mul(&tmp3,&A->x,&A->y);
+    
+    //x0
+    Fp6_mul(&ANS->x0,&tmp1,&tmp2);
+    Fp6_sub(&ANS->x0,&ANS->x0,&tmp3);
+    Fp6_mul_basis(&tmp1,&tmp3);
+    Fp6_sub(&ANS->x0,&ANS->x0,&tmp1);
+    //x1
+    Fp6_add(&ANS->x1,&tmp3,&tmp3);
+    
+    Fp6_clear(&tmp1);
+    Fp6_clear(&tmp2);
+    Fp6_clear(&tmp3);
+}
+void Fp12_inv(struct Fp12 *ANS,struct Fp12 *A){
+    struct Fp12 frob,buf;
+    Fp12_init(&frob);
+    Fp12_init(&buf);
+    
+    Fp12_inv_map(&frob,A);
+    Fp12_mul(&buf,A,&frob);
+    Fp6_inv(&buf.x,&buf.x);
+    Fp6_mul(&ANS->x,&frob.x,&buf.x);
+    Fp6_mul(&ANS->y,&frob.y,&buf.x);
+    
+    Fp12_clear(&frob);
+    Fp12_clear(&buf);
+}
+void Fp12_inv_map(struct Fp12 *ANS,struct Fp12 *A){
+    Fp6_set(&ANS->x,&A->x);
+    Fp6_set_neg(&ANS->y,&A->y);
+}
+/*-------------------------------legendre-------------------------------*/
+int Fp12_legendre(struct Fp12 *A){
+    mpz_t exp;
+    mpz_init(exp);
+    struct Fp12 buf;
+    Fp12_init(&buf);
+    
+    mpz_pow_ui(exp,prime,12);
+    mpz_sub_ui(exp,exp,1);
+    mpz_tdiv_q_ui(exp,exp,2);
+    Fp12_pow(&buf,A,exp);
+    
+    mpz_clear(exp);
+    if(Fp12_cmp_one(&buf)==0){
+        Fp12_clear(&buf);
+        return 1;
+    }else if(Fp12_cmp_zero(&buf)==0){
+        Fp12_clear(&buf);
+        return 0;
+    }else{
+        Fp12_clear(&buf);
+        return -1;
     }
+}
+/*---------------------------------sqr----------------------------------*/
+void Fp12_sqrt(struct Fp12 *ANS,struct Fp12 *A){
+    struct Fp12 buf1,buf2;
+    Fp12_init(&buf1);
+    Fp12_init(&buf2);
+    mpz_t exp,buf;
+    mpz_init(exp);
+    mpz_init(buf);
     
-    struct EFp12 Tmp,next_P;
-    EFp12_init(&Tmp);
-    EFp12_set(&Tmp,P);
-    EFp12_init(&next_P);
+    Fp12_frobenius_4(&buf1,A);
+    Fp12_frobenius_2(&buf2,A);
+    Fp12_mul(&buf1,&buf1,&buf2);
+    Fp12_mul(&buf1,&buf1,A);
+    Fp12_set_ui(&buf2,0);
+    Fp2_sqrt(&buf2.x0,&buf1.x0);
+    Fp2_inv(&buf2.x0,&buf2.x0);
+    Fp2_set(&buf2.x0,&buf2.x0);
+    mpz_pow_ui(exp,prime,8);
+    mpz_pow_ui(buf,prime,4);
+    mpz_add(exp,exp,buf);
+    mpz_add_ui(exp,exp,2);
+    mpz_tdiv_q_ui(exp,exp,2);
+    Fp12_pow(&buf1,A,exp);
+    Fp12_mul(&buf1,&buf1,&buf2);
+    Fp12_set(ANS,&buf1);
+    
+    mpz_clear(exp);
+    mpz_clear(buf);
+    Fp12_clear(&buf1);
+    Fp12_clear(&buf2);
+}
+/*---------------------------------pow----------------------------------*/
+void Fp12_pow(struct Fp12 *ANS,struct Fp12 *A,mpz_t a){
     int i,length;
-    length=(int)mpz_sizeinbase(R,2);
+    length=(int)mpz_sizeinbase(a,2);
     char binary[length];
-    mpz_get_str(binary,2,R);
+    mpz_get_str(binary,2,a);
+    struct Fp12 buf;
+    Fp12_init(&buf);
+    Fp12_set(&buf,A);
     
-    EFp12_set(&next_P,&Tmp);
     for(i=1; binary[i]!='\0'; i++){
-        EFp12_ECD(&next_P,&next_P);
+        Fp12_squaring(&buf,&buf);
         if(binary[i]=='1'){
-            EFp12_ECA(&next_P,&next_P,&Tmp);
+            Fp12_mul(&buf,A,&buf);
         }
     }
-    EFp12_set(ANS,&next_P);
     
-    EFp12_clear(&next_P);
-    EFp12_clear(&Tmp);
+    Fp12_set(ANS,&buf);
+    Fp12_clear(&buf);
 }
-
-/*--------------------------------G2 SCM--------------------------------*/
-void EFp12_G2_SCM_normal(struct EFp12 *ANS,struct EFp12 *Q,mpz_t S){
-    struct EFp2 twisted_Q;
-    EFp2_init(&twisted_Q);
+/*---------------------------------cmp----------------------------------*/
+int Fp12_cmp(struct Fp12 *A,struct Fp12 *B){
+    if(Fp6_cmp(&A->x,&B->x)==0 && Fp6_cmp(&A->y,&B->y)==0){
+        return 0;
+    }
+    return 1;
+}
+int Fp12_cmp_ui(struct Fp12 *A,unsigned long int a){
+    if(Fp6_cmp_ui(&A->x,a)==0 && Fp6_cmp_ui(&A->y,a)==0){
+        return 0;
+    }
+    return 1;
+}
+int Fp12_cmp_mpz(struct Fp12 *A,mpz_t a){
+    if(Fp6_cmp_mpz(&A->x,a)==0 && Fp6_cmp_mpz(&A->y,a)==0){
+        return 0;
+    }
+    return 1;
+}
+int Fp12_cmp_zero(struct Fp12 *A){
+    if(Fp6_cmp_zero(&A->x)==0 && Fp6_cmp_zero(&A->y)==0){
+        return 0;
+    }
+    return 1;
+}
+int Fp12_cmp_one(struct Fp12 *A){
+    if(Fp6_cmp_one(&A->x)==0 && Fp6_cmp_zero(&A->y)==0){
+        return 0;
+    }
+    return 1;
+}
+/*-------------------------------frobenius--------------------------------*/
+void Fp12_frobenius_1(struct Fp12 *ANS,struct Fp12 *A){
+    struct Fp tmp;
+    Fp_init(&tmp);
     
-    EFp12_to_EFp2(&twisted_Q,Q);
-    EFp2_SCM(&twisted_Q,&twisted_Q,S);
-    EFp2_to_EFp12(ANS,&twisted_Q);
+    //x0
+    Fp_set(&ANS->x0.x0.x0,&A->x0.x0.x0);
+    Fp_set_neg(&ANS->x0.x0.x1,&A->x0.x0.x1);
+    //Fp_set(&ANS->x0.x1.x0,&A->x0.x1.x0);
+    //Fp_set_neg(&ANS->x0.x1.x1,&A->x0.x1.x1);
+    //Fp2_mul(&ANS->x0.x1,&ANS->x0.x1,&Fp2_basis_prime_1_div_3_1);	//can be efficient
+    Fp_set(&tmp,&A->x0.x1.x0);
+    Fp_set(&ANS->x0.x1.x0,&A->x0.x1.x1);
+    Fp_set(&ANS->x0.x1.x1,&tmp);
+    Fp2_mul_mpz(&ANS->x0.x1,&ANS->x0.x1,Fp2_basis_prime_1_div_3_1.x1.x0);
     
-    EFp2_clear(&twisted_Q);
+    Fp_set(&ANS->x0.x2.x0,&A->x0.x2.x0);
+    Fp_set_neg(&ANS->x0.x2.x1,&A->x0.x2.x1);
+    Fp2_mul_mpz(&ANS->x0.x2,&ANS->x0.x2,Fp2_basis_prime_1_div_3_2.x0.x0);
+    //x1
+    Fp_set(&ANS->x1.x0.x0,&A->x1.x0.x0);
+    Fp_set_neg(&ANS->x1.x0.x1,&A->x1.x0.x1);
+    Fp2_mul(&ANS->x1.x0,&ANS->x1.x0,&Fp2_basis_prime_1_div_6);
+    //Fp_set(&ANS->x1.x1.x0,&A->x1.x1.x0);
+    //Fp_set_neg(&ANS->x1.x1.x1,&A->x1.x1.x1);
+    //Fp2_mul(&ANS->x1.x1,&ANS->x1.x1,&Fp2_basis_prime_1_div_3_1);	//can be efficient
+    Fp_set(&tmp,&A->x1.x1.x0);
+    Fp_set(&ANS->x1.x0,&A->x1.x1);
+    Fp_set(&ANS->x1.x1,&tmp);
+    Fp2_mul_mpz(&ANS->x1.x1,&ANS->x1.x1,Fp2_basis_prime_1_div_3_1.x1.x0);
+    
+    Fp_set(&ANS->x1.x2.x0,&A->x1.x2.x0);
+    Fp_set_neg(&ANS->x1.x2.x1,&A->x1.x2.x1);
+    Fp2_mul(&ANS->x1.x2,&ANS->x1.x2,&Fp2_basis_prime_1_div_6);
+    
+    //x2
+    Fp_set(&ANS->x2.x0.x0,&A->x2.x0.x0);
+    Fp_set_neg(&ANS->x2.x0.x1,&A->x2.x0.x1);
+    Fp_set(&tmp,&A->x2.x1.x0);
+    Fp_set(&ANS->x2.x1.x0,&A->x2.x1.x1);
+    Fp_set(&ANS->x2.x1.x1,&tmp);
+    Fp2_mul_mpz(&ANS->x2.x1,&ANS->x2.x1,Fp2_basis_prime_1_div_3_1.x1.x0);
+    
+    Fp_set(&ANS->x2.x2.x0,&A->x2.x2.x0);
+    Fp_set_neg(&ANS->x2.x2.x1,&A->x2.x2.x1);
+    Fp2_mul_mpz(&ANS->x2.x2,&ANS->x2.x2,Fp2_basis_prime_1_div_3_2.x0.x0);
+    
+    Fp_clear(&tmp);
 }
-/*-----------------------------frobenius--------------------------------*/
-void EFp12_frobenius_1(struct EFp12 *ANS,struct EFp12 *P){
-    Fp12_frobenius_1(&ANS->x,&P->x);
-    Fp12_frobenius_1(&ANS->y,&P->y);
+void Fp12_frobenius_2(struct Fp12 *ANS,struct Fp12 *A){
+    Fp12_set(ANS,A);
 }
-void EFp12_frobenius_2(struct EFp12 *ANS,struct EFp12 *P){
-    Fp12_frobenius_2(&ANS->x,&P->x);
-    Fp12_frobenius_2(&ANS->y,&P->y);
+void Fp12_frobenius_3(struct Fp12 *ANS,struct Fp12 *A){
+    struct Fp tmp;
+    Fp_init(&tmp);
+    
+    //x0
+    Fp_set(&ANS->x0.x0,&A->x0.x0);
+    Fp_set_neg(&ANS->x0.x1,&A->x0.x1);
+    //x1
+    Fp_set(&tmp,&A->x1.x0);
+    Fp_set(&ANS->x1.x0,&A->x1.x1);
+    Fp_set(&ANS->x1.x1,&tmp);
+    //x2
+    Fp_set_neg(&ANS->x2.x0,&A->x2.x0);
+    Fp_set(&ANS->x2.x1,&A->x2.x1);
+    
+    Fp_clear(&tmp);
 }
-void EFp12_frobenius_3(struct EFp12 *ANS,struct EFp12 *P){
-    Fp12_frobenius_3(&ANS->x,&P->x);
-    Fp12_frobenius_3(&ANS->y,&P->y);
+void Fp12_frobenius_4(struct Fp12 *ANS,struct Fp12 *A){
+    Fp12_set(ANS,A);
 }
-void EFp12_frobenius_4(struct EFp12 *ANS,struct EFp12 *P){
-    Fp12_frobenius_4(&ANS->x,&P->x);
-    Fp12_frobenius_4(&ANS->y,&P->y);
+void Fp12_frobenius_6(struct Fp12 *ANS,struct Fp12 *A){
+    Fp12_set(ANS,A);
 }
-void EFp12_frobenius_6(struct EFp12 *ANS,struct EFp12 *P){
-    Fp12_frobenius_6(&ANS->x,&P->x);
-    Fp12_frobenius_6(&ANS->y,&P->y);
+void Fp12_frobenius_8(struct Fp12 *ANS,struct Fp12 *A){
+    Fp12_set(ANS,A);
 }
-void EFp12_frobenius_8(struct EFp12 *ANS,struct EFp12 *P){
-    Fp12_frobenius_8(&ANS->x,&P->x);
-    Fp12_frobenius_8(&ANS->y,&P->y);
-}
-void EFp12_frobenius_10(struct EFp12 *ANS,struct EFp12 *P){
-    Fp12_frobenius_10(&ANS->x,&P->x);
-    Fp12_frobenius_10(&ANS->y,&P->y);
+void Fp12_frobenius_10(struct Fp12 *ANS,struct Fp12 *A){
+    Fp12_set(ANS,A);
 }
 /*============================================================================*/
 /* sextic twist                                                               */
@@ -2425,7 +2472,7 @@ void Final_exp_female_researchers_algo(struct Fp12 *ANS,struct Fp12 *A){
     Fp12_mul(&t1,&t1,&t2);//t1:=t1*t2;
     Fp12_pow(&t2,&t3,positive_X);//t2:=t3^(u);
     Fp12_frobenius_6(&t2,&t2);
-    Fp12_mul(&t2,&t2,&t0);//t2:=t2*t0;
+    Fp12_mul(&t2,&t2,&t0);//t2:=t2*t0
     Fp12_mul(&t2,&t2,&tmp);//t2:=t2*f;
     Fp12_mul(&t1,&t1,&t2);//t1:=t1*t2;
     
@@ -2568,6 +2615,7 @@ void Pseudo_8_sparse_mul(struct Fp12 *ANS,struct Fp12 *A,struct Fp12 *B){
     Fp2_mul(&tmp0,&A->x1.x0,&B->x1.x1);		//tmp0←a*f3
     Fp2_mul(&tmp1,&A->x1.x1,&B->x1.x2);		//tmp1←b*f4
     Fp2_add(&tmp2,&A->x1.x0,&A->x1.x1);		//tmp2←f3+f4
+    Fp2_add(&tmp2,&tmp2,&A->x1.x2);
     Fp2_mul(&tmp2,&tmp2,&tmp3);			//tmp2←tmp2+tmp3
     Fp2_sub(&tmp2,&tmp2,&tmp0);			//tmp2←tmp2-tmp0
     Fp2_sub(&tmp2,&tmp2,&tmp1);			//tmp2←tmp2-tmp1
@@ -2682,6 +2730,7 @@ void f_ltq(struct Fp12 *f,struct EFp2 *T,struct EFp2 *Q,struct EFp *P,struct Fp 
     Fp2_clear(&B);
     Fp2_clear(&C);
     Fp2_clear(&D);
+    Fp2_clear(&E);
 }
 
 
