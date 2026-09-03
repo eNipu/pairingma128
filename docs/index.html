@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BLS Short Signatures · WebAssembly demo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>BLS Short Signatures <span class="tag">+ aggregation</span></h1>
+    <p class="sub">
+      Running your real 128-bit pairing library (BLS12 curve, Optimal-Ate) compiled to
+      <strong>WebAssembly</strong> — GMP + the refactored <code>field/curve/pairing</code> modules.
+    </p>
+    <div id="status" class="status loading">Loading WebAssembly module…</div>
+  </header>
+
+  <main>
+    <!-- Step 0: the one equation that makes it work -->
+    <section class="card explainer">
+      <h2>Why a pairing makes this possible</h2>
+      <p>
+        A pairing is a map <code>e : G<sub>1</sub> × G<sub>2</sub> → G<sub>T</sub></code> with the magic property
+        <code>e(a·P, b·Q) = e(P, Q)<sup>a·b</sup></code>.
+        BLS verification is the single equality:
+      </p>
+      <div class="equation">e(&sigma;, Q) &nbsp;=&nbsp; e(H(m), pk)</div>
+      <p class="muted">
+        pk = sk·Q and &sigma; = sk·H(m), so both sides equal e(H(m), Q)<sup>sk</sup>.
+      </p>
+    </section>
+
+    <!-- Step 1: key generation -->
+    <section class="card">
+      <h2>1 · Generate a keypair</h2>
+      <button id="btn-keygen" disabled>Generate key</button>
+      <dl class="kv">
+        <dt>secret key <span class="muted">(sk)</span></dt>
+        <dd><code id="out-sk">—</code></dd>
+        <dt>public key <span class="muted">(pk = sk·Q ∈ G₂)</span></dt>
+        <dd><code id="out-pk">—</code></dd>
+      </dl>
+    </section>
+
+    <!-- Step 2: sign + verify a single message -->
+    <section class="card">
+      <h2>2 · Sign &amp; verify a message</h2>
+      <div class="row">
+        <input id="msg" type="text" value="hello pairing" placeholder="message" />
+        <button id="btn-sign" disabled>Sign</button>
+        <button id="btn-verify" disabled>Verify</button>
+      </div>
+      <dl class="kv">
+        <dt>signature <span class="muted">(&sigma; = sk·H(m) ∈ G₁)</span></dt>
+        <dd><code id="out-sig">—</code></dd>
+        <dt>verification</dt>
+        <dd id="out-verify" class="badge idle">—</dd>
+      </dl>
+    </section>
+
+    <!-- Step 3: aggregation -->
+    <section class="card">
+      <h2>3 · Aggregate signatures</h2>
+      <p class="muted">
+        Sign two messages, then combine the signatures into <em>one</em> signature of the same size
+        that still verifies both. (ECDSA can't do this.)
+      </p>
+      <div class="row">
+        <input id="msgA" type="text" value="alice" placeholder="message A" />
+        <button id="btn-signA" disabled>Sign A</button>
+      </div>
+      <div class="row">
+        <input id="msgB" type="text" value="bob" placeholder="message B" />
+        <button id="btn-signB" disabled>Sign B</button>
+      </div>
+      <div class="row">
+        <button id="btn-agg" disabled>Aggregate &amp; verify</button>
+        <label class="tamper"><input id="tamper" type="checkbox" /> tamper message B</label>
+      </div>
+      <dl class="kv">
+        <dt>aggregate <span class="muted">(&sigma; = &sigma;₁ + &sigma;₂)</span></dt>
+        <dd><code id="out-agg">—</code></dd>
+        <dt>aggregate verification</dt>
+        <dd id="out-aggverify" class="badge idle">—</dd>
+      </dl>
+    </section>
+  </main>
+
+  <footer>
+    <p class="muted">
+      Demo of <code>examples/bls</code> on top of the refactored pairing library.
+      The browser runs the actual Optimal-Ate pairing (128-bit security) via WebAssembly.
+    </p>
+  </footer>
+
+  <script src="bls.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
