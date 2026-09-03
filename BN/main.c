@@ -6,7 +6,7 @@ int main(){
     set_parameters();
     print_parameters();
 
-    test_opt_ate_pairing();
+    test_ate_pairing();
 
     clear_parameters();
     return 0;
