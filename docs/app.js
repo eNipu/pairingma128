@@ -4,7 +4,7 @@
 let wasmInit, wasmKeygen, wasmSign, wasmVerify, wasmAggregate, wasmAggVerify;
 
 /* current keypair + signed messages (full hex kept in memory) */
-let state = { sk: null, pk: null, sigs: [], msgs: [] };
+let state = { sk: null, pk: null, sig: null, sigs: {}, msgs: {} };
 
 const $ = (id) => document.getElementById(id);
 
@@ -19,9 +19,23 @@ function badge(id, ok) {
   el.className = "badge " + (ok ? "ok" : "fail");
 }
 
-function setStatus(ready) {
+function resetBadge(id, text) {
+  const el = $(id);
+  el.textContent = text;
+  el.className = "badge idle";
+}
+
+/* Inline, next to the control that needs it. The demo used window.alert(),
+   which blocks the tab and puts the message somewhere the eye is not. */
+function hint(id, message) {
+  $(id).textContent = message || "";
+}
+
+function setStatus(ready, message) {
   const el = $("status");
-  el.textContent = ready ? "WebAssembly ready — BLS12 Optimal-Ate pairing (128-bit)" : "Loading…";
+  el.textContent = message || (ready
+    ? "webassembly ready — bls12 optimal-ate pairing, 128-bit"
+    : "loading webassembly module");
   el.className = "status " + (ready ? "ready" : "loading");
 }
 
@@ -47,9 +61,12 @@ async function boot() {
     console.log("BLS init in " + Math.round(performance.now() - t0) + " ms");
     enableAll();
   } catch (e) {
-    setStatus(false);
-    $("status").textContent = "Failed to load WebAssembly: " + e;
+    setStatus(false, "webassembly failed to load: " + e);
   }
+}
+
+function clearSigned() {
+  ["msg", "msgA", "msgB"].forEach((id) => $(id).removeAttribute("data-signed"));
 }
 
 function onKeygen() {
@@ -57,50 +74,57 @@ function onKeygen() {
   const sep = kp.indexOf("|");
   state.sk = kp.slice(0, sep);
   state.pk = kp.slice(sep + 1);
-  state.sigs = [];
-  state.msgs = [];
+  state.sig = null;
+  state.sigs = {};
+  state.msgs = {};
+  clearSigned();
   $("out-sk").textContent = trunc(state.sk, 24);
   $("out-pk").textContent = trunc(state.pk, 48);
-  $("out-sig").textContent = "—";
-  $("out-agg").textContent = "—";
-  $("out-verify").className = "badge idle"; $("out-verify").textContent = "—";
-  $("out-aggverify").className = "badge idle"; $("out-aggverify").textContent = "—";
+  $("out-sig").textContent = "not yet signed";
+  $("out-agg").textContent = "not yet aggregated";
+  resetBadge("out-verify", "awaiting a signature");
+  resetBadge("out-aggverify", "awaiting an aggregate");
+  hint("hint-sign", "");
+  hint("hint-agg", "");
 }
 
 function onSign() {
-  if (!state.sk) return alert("Generate a key first.");
+  if (!state.sk) return hint("hint-sign", "Generate a key first.");
+  hint("hint-sign", "");
   state.sig = wasmSign(state.sk, $("msg").value);
+  $("msg").setAttribute("data-signed", "");
   $("out-sig").textContent = trunc(state.sig, 48);
-  $("out-verify").className = "badge idle"; $("out-verify").textContent = "—";
+  resetBadge("out-verify", "not yet verified");
 }
 
 function onVerify() {
-  if (!state.sig) return alert("Sign a message first.");
-  const ok = wasmVerify(state.pk, state.sig, $("msg").value) === 1;
-  badge("out-verify", ok);
+  if (!state.sig) return hint("hint-sign", "Sign a message first.");
+  hint("hint-sign", "");
+  badge("out-verify", wasmVerify(state.pk, state.sig, $("msg").value) === 1);
 }
 
 function signSlot(which) {
-  if (!state.sk) return alert("Generate a key first.");
+  if (!state.sk) return hint("hint-agg", "Generate a key first.");
+  hint("hint-agg", "");
   const input = $(which === "A" ? "msgA" : "msgB");
-  const sig = wasmSign(state.sk, input.value);
-  state.sigs[which] = sig;
+  state.sigs[which] = wasmSign(state.sk, input.value);
   state.msgs[which] = input.value;
-  input.style.outline = "1px solid var(--ok)";
+  input.setAttribute("data-signed", "");
 }
 
 function onAggregate() {
-  if (state.sigs["A"] == null || state.sigs["B"] == null) {
-    return alert("Sign both messages first.");
+  if (state.sigs.A == null || state.sigs.B == null) {
+    return hint("hint-agg", "Sign both messages first.");
   }
-  const agg = wasmAggregate(state.sigs["A"] + ";" + state.sigs["B"]);
+  hint("hint-agg", "");
+  const agg = wasmAggregate(state.sigs.A + ";" + state.sigs.B);
   $("out-agg").textContent = trunc(agg, 48);
 
-  const msgB = $("tamper").checked ? "tampered!" : state.msgs["B"];
+  const msgB = $("tamper").checked ? "tampered!" : state.msgs.B;
   const ok = wasmAggVerify(
     agg,
     state.pk + ";" + state.pk,
-    state.msgs["A"] + "\n" + msgB
+    state.msgs.A + "\n" + msgB
   ) === 1;
   badge("out-aggverify", ok);
 }
@@ -111,5 +135,15 @@ $("btn-verify").addEventListener("click", onVerify);
 $("btn-signA").addEventListener("click", () => signSlot("A"));
 $("btn-signB").addEventListener("click", () => signSlot("B"));
 $("btn-agg").addEventListener("click", onAggregate);
+
+/* Editing a message after signing invalidates the verdict on screen, so it can
+   never show a stale "valid" against text the user has since changed. */
+$("msg").addEventListener("input", () => resetBadge("out-verify", "not yet verified"));
+["msgA", "msgB"].forEach((id) => $(id).addEventListener("input", () => {
+  $(id).removeAttribute("data-signed");
+  const which = id === "msgA" ? "A" : "B";
+  delete state.sigs[which];
+  resetBadge("out-aggverify", "awaiting an aggregate");
+}));
 
 boot();

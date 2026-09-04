@@ -1,1 +1,6 @@
 build/
+
+# local agent/CLI state
+.agents/
+.claude/
+skills-lock.json

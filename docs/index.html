@@ -3,94 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BLS Short Signatures · WebAssembly demo</title>
+  <title>BLS short signatures · WebAssembly demo</title>
+  <meta name="description" content="BLS short signatures and signature aggregation, computed in the browser by a 128-bit Optimal-Ate pairing over BLS12 compiled to WebAssembly." />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="/favicon.svg" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <a class="skip" href="#keygen">Skip to the demo</a>
+
   <header>
-    <h1>BLS Short Signatures <span class="tag">+ aggregation</span></h1>
+    <p class="crumb"><a href="/code">← al-am.in / code</a></p>
+    <h1>
+      BLS short signatures
+      <span class="tag">and what makes them add together</span>
+    </h1>
     <p class="sub">
-      Running your real 128-bit pairing library (BLS12 curve, Optimal-Ate) compiled to
-      <strong>WebAssembly</strong> — GMP + the refactored <code>field/curve/pairing</code> modules.
+      The real pairing library, compiled to WebAssembly. Every value below is computed
+      in this tab by an Optimal-Ate pairing over the BLS12 curve at 128-bit security —
+      GMP plus the <code>field</code> / <code>curve</code> / <code>pairing</code> modules.
     </p>
-    <div id="status" class="status loading">Loading WebAssembly module…</div>
+    <div id="status" class="status loading">loading webassembly module</div>
   </header>
 
   <main>
-    <!-- Step 0: the one equation that makes it work -->
-    <section class="card explainer">
+    <section class="explainer">
       <h2>Why a pairing makes this possible</h2>
       <p>
-        A pairing is a map <code>e : G<sub>1</sub> × G<sub>2</sub> → G<sub>T</sub></code> with the magic property
-        <code>e(a·P, b·Q) = e(P, Q)<sup>a·b</sup></code>.
-        BLS verification is the single equality:
+        A pairing is a map <code>e : G<sub>1</sub> × G<sub>2</sub> → G<sub>T</sub></code>
+        with one useful property: <code>e(a·P, b·Q) = e(P, Q)<sup>a·b</sup></code>.
+        Exponents move across the map, so verification is a single equality.
       </p>
       <div class="equation">e(&sigma;, Q) &nbsp;=&nbsp; e(H(m), pk)</div>
       <p class="muted">
-        pk = sk·Q and &sigma; = sk·H(m), so both sides equal e(H(m), Q)<sup>sk</sup>.
+        pk = sk·Q and &sigma; = sk·H(m), so both sides come out to e(H(m), Q)<sup>sk</sup>.
       </p>
     </section>
 
-    <!-- Step 1: key generation -->
-    <section class="card">
-      <h2>1 · Generate a keypair</h2>
-      <button id="btn-keygen" disabled>Generate key</button>
+    <section id="keygen" data-step="01">
+      <h2>Generate a keypair</h2>
+      <div class="row">
+        <button id="btn-keygen" disabled>Generate key</button>
+      </div>
       <dl class="kv">
-        <dt>secret key <span class="muted">(sk)</span></dt>
-        <dd><code id="out-sk">—</code></dd>
-        <dt>public key <span class="muted">(pk = sk·Q ∈ G₂)</span></dt>
-        <dd><code id="out-pk">—</code></dd>
+        <dt>secret key <span class="muted">sk</span></dt>
+        <dd><code id="out-sk">not yet generated</code></dd>
+        <dt>public key <span class="muted">pk = sk·Q ∈ G₂</span></dt>
+        <dd><code id="out-pk">not yet generated</code></dd>
       </dl>
     </section>
 
-    <!-- Step 2: sign + verify a single message -->
-    <section class="card">
-      <h2>2 · Sign &amp; verify a message</h2>
+    <section data-step="02">
+      <h2>Sign and verify a message</h2>
       <div class="row">
+        <label class="vh" for="msg">Message to sign</label>
         <input id="msg" type="text" value="hello pairing" placeholder="message" />
         <button id="btn-sign" disabled>Sign</button>
         <button id="btn-verify" disabled>Verify</button>
       </div>
+      <p class="hint" id="hint-sign" role="status"></p>
       <dl class="kv">
-        <dt>signature <span class="muted">(&sigma; = sk·H(m) ∈ G₁)</span></dt>
-        <dd><code id="out-sig">—</code></dd>
+        <dt>signature <span class="muted">&sigma; = sk·H(m) ∈ G₁</span></dt>
+        <dd><code id="out-sig">not yet signed</code></dd>
         <dt>verification</dt>
-        <dd id="out-verify" class="badge idle">—</dd>
+        <dd id="out-verify" class="badge idle">awaiting a signature</dd>
       </dl>
+      <p class="muted">
+        Edit the message after signing and verify again — the signature is bound to the
+        exact bytes, so a single changed character fails.
+      </p>
     </section>
 
-    <!-- Step 3: aggregation -->
-    <section class="card">
-      <h2>3 · Aggregate signatures</h2>
-      <p class="muted">
-        Sign two messages, then combine the signatures into <em>one</em> signature of the same size
-        that still verifies both. (ECDSA can't do this.)
+    <section data-step="03">
+      <h2>Aggregate two signatures</h2>
+      <p>
+        Sign two messages, then add the signatures together. The sum is one signature,
+        the same size as either input, and it still verifies both messages. ECDSA has no
+        equivalent operation.
       </p>
       <div class="row">
+        <label class="vh" for="msgA">First message</label>
         <input id="msgA" type="text" value="alice" placeholder="message A" />
         <button id="btn-signA" disabled>Sign A</button>
       </div>
       <div class="row">
+        <label class="vh" for="msgB">Second message</label>
         <input id="msgB" type="text" value="bob" placeholder="message B" />
         <button id="btn-signB" disabled>Sign B</button>
       </div>
       <div class="row">
-        <button id="btn-agg" disabled>Aggregate &amp; verify</button>
-        <label class="tamper"><input id="tamper" type="checkbox" /> tamper message B</label>
+        <button id="btn-agg" disabled>Aggregate and verify</button>
+        <label class="tamper" for="tamper">
+          <input id="tamper" type="checkbox" /> tamper with message B
+        </label>
       </div>
+      <p class="hint" id="hint-agg" role="status"></p>
       <dl class="kv">
-        <dt>aggregate <span class="muted">(&sigma; = &sigma;₁ + &sigma;₂)</span></dt>
-        <dd><code id="out-agg">—</code></dd>
-        <dt>aggregate verification</dt>
-        <dd id="out-aggverify" class="badge idle">—</dd>
+        <dt>aggregate <span class="muted">&sigma; = &sigma;₁ + &sigma;₂</span></dt>
+        <dd><code id="out-agg">not yet aggregated</code></dd>
+        <dt>verification</dt>
+        <dd id="out-aggverify" class="badge idle">awaiting an aggregate</dd>
       </dl>
     </section>
   </main>
 
   <footer>
-    <p class="muted">
-      Demo of <code>examples/bls</code> on top of the refactored pairing library.
-      The browser runs the actual Optimal-Ate pairing (128-bit security) via WebAssembly.
+    <p>
+      Source: <a href="https://github.com/eNipu/pairingma128">eNipu/pairingma128</a>,
+      <code>examples/bls</code>. The browser runs the same Optimal-Ate pairing the
+      native library does; the mathematical identities behind it are asserted in
+      <code>tests/</code>.
     </p>
   </footer>
 
