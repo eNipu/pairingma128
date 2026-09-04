@@ -60,7 +60,7 @@ run_one() { # $1=name  $2=dir  $3=header  $4=source
 }
 
 overall=0
-for c in "${@:-bn bls12 kss16}"; do
+for c in ${@:-bn bls12 kss16}; do
     case "$c" in
         bn)    run_one bn    BN    BN12_header.h  EFp12_optimal.c || overall=1 ;;
         bls12) run_one bls12 BLS12 BLS_12.h       main.c          || overall=1 ;;
