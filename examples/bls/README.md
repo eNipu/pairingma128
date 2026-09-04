@@ -49,11 +49,30 @@ EMSDK=$HOME/emsdk GMP_DIR=$HOME/gmp-6.3.0 ./examples/bls/build_wasm.sh
 `docs/` is a self-contained static site (`index.html`, `style.css`, `app.js`,
 `bls.js`, `bls.wasm`). Serve it or point GitHub Pages at it.
 
-### Enable GitHub Pages (one-time)
+### Deploy to Cloudflare Pages (primary, `https://bls.al-am.in/`)
+
+Two options, both shipping the pre-built `docs/` as-is (no build step):
+
+**Option 1 — GitHub Action (auto-deploy on push):**
+
+1. Add repo secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
+   (same values as the portfolio repo).
+2. In the al-am.in DNS zone, add `CNAME bls -> bls-demo.pages.dev`.
+3. Push to `refactor/decouple-field-arithmetic` (or run the workflow manually).
+
+**Option 2 — one local command:**
+
+```sh
+npx wrangler login                      # once
+./examples/bls/deploy-cloudflare.sh     # npx wrangler pages deploy docs --project-name=bls-demo
+```
+
+Then add `CNAME bls -> bls-demo.pages.dev`. The demo is at `https://bls.al-am.in/`.
+
+### Alternative: GitHub Pages
 
 Repo → **Settings → Pages → Source: "Deploy from a branch"** →
 branch `refactor/decouple-field-arithmetic`, folder `/docs` → Save.
-
 The demo is then at `https://<user>.github.io/pairingma128/`.
 
 ## Notes
