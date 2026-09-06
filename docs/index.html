@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BLS short signatures · WebAssembly demo</title>
-  <meta name="description" content="BLS short signatures and signature aggregation, computed in the browser by a 128-bit Optimal-Ate pairing over BLS12 compiled to WebAssembly." />
+  <meta name="description" content="A hospital lab signs patient reports with BLS short signatures and folds two reports into one aggregate signature — computed in the browser by a 128-bit Optimal-Ate pairing over BLS12 compiled to WebAssembly." />
   <meta name="color-scheme" content="light dark" />
   <link rel="icon" href="/favicon.svg" />
   <link rel="stylesheet" href="style.css" />
@@ -16,12 +16,14 @@
     <p class="crumb"><a href="/code">← al-am.in / code</a></p>
     <h1>
       BLS short signatures
-      <span class="tag">and what makes them add together</span>
+      <span class="tag">one small signature, two signed reports</span>
     </h1>
     <p class="sub">
-      The real pairing library, compiled to WebAssembly. Every value below is computed
-      in this tab by an Optimal-Ate pairing over the BLS12 curve at 128-bit security —
-      GMP plus the <code>field</code> / <code>curve</code> / <code>pairing</code> modules.
+      A hospital lab signs patient reports so a pharmacist or insurer can check
+      them. The real pairing library runs here, compiled to WebAssembly: every
+      value below is computed in this tab by an Optimal-Ate pairing over the
+      BLS12 curve at 128-bit security — GMP plus the
+      <code>field</code> / <code>curve</code> / <code>pairing</code> modules.
     </p>
     <div id="status" class="status loading">loading webassembly module</div>
   </header>
@@ -32,32 +34,44 @@
       <p>
         A pairing is a map <code>e : G<sub>1</sub> × G<sub>2</sub> → G<sub>T</sub></code>
         with one useful property: <code>e(a·P, b·Q) = e(P, Q)<sup>a·b</sup></code>.
-        Exponents move across the map, so verification is a single equality.
+        Exponents move across the map, so checking a signature is a single equality —
+        no need for the lab's secret key.
       </p>
       <div class="equation">e(&sigma;, Q) &nbsp;=&nbsp; e(H(m), pk)</div>
       <p class="muted">
         pk = sk·Q and &sigma; = sk·H(m), so both sides come out to e(H(m), Q)<sup>sk</sup>.
+        If anyone changes the report, H(m) changes and the two sides stop matching.
       </p>
     </section>
 
     <section id="keygen" data-step="01">
-      <h2>Generate a keypair</h2>
+      <h2>The lab generates its signing keypair</h2>
+      <p>
+        St. Mary's lab creates one keypair. The secret key <code>sk</code> never
+        leaves the lab's server; the public key <code>pk</code> is published so
+        anyone can check a report.
+      </p>
       <div class="row">
         <button id="btn-keygen" disabled>Generate key</button>
       </div>
       <dl class="kv">
-        <dt>secret key <span class="muted">sk</span></dt>
+        <dt>secret key <span class="muted">sk — stays on the lab's server</span></dt>
         <dd><code id="out-sk">not yet generated</code></dd>
-        <dt>public key <span class="muted">pk = sk·Q ∈ G₂</span></dt>
+        <dt>public key <span class="muted">pk = sk·Q ∈ G₂ — printed on reports</span></dt>
         <dd><code id="out-pk">not yet generated</code></dd>
       </dl>
     </section>
 
     <section data-step="02">
-      <h2>Sign and verify a message</h2>
+      <h2>The lab signs a report, the pharmacy checks it</h2>
+      <p>
+        A patient's fasting-glucose result is signed, then verified against the
+        lab's public key. The signature <code>&sigma;</code> is short — a single
+        point on the curve — but bound to the exact bytes of the report.
+      </p>
       <div class="row">
-        <label class="vh" for="msg">Message to sign</label>
-        <input id="msg" type="text" value="hello pairing" placeholder="message" />
+        <label class="vh" for="msg">Report to sign</label>
+        <input id="msg" type="text" value="PATIENT: Ana Rivera | TEST: fasting glucose | VALUE: 92 mg/dL | RESULT: NORMAL" placeholder="report" />
         <button id="btn-sign" disabled>Sign</button>
         <button id="btn-verify" disabled>Verify</button>
       </div>
@@ -69,32 +83,34 @@
         <dd id="out-verify" class="badge idle">awaiting a signature</dd>
       </dl>
       <p class="muted">
-        Edit the message after signing and verify again — the signature is bound to the
-        exact bytes, so a single changed character fails.
+        Try changing a value after signing — say 92 to 192 mg/dL — and verify again.
+        One changed digit and the report no longer verifies, so a falsified lab
+        result is caught.
       </p>
     </section>
 
     <section data-step="03">
-      <h2>Aggregate two signatures</h2>
+      <h2>Two reports, one signature</h2>
       <p>
-        Sign two messages, then add the signatures together. The sum is one signature,
-        the same size as either input, and it still verifies both messages. ECDSA has no
-        equivalent operation.
+        Sign both of the patient's reports, then add the signatures together. The
+        sum is one signature the same size as either input, and it still verifies
+        both reports — the insurer checks a whole visit with a single step. ECDSA
+        has no equivalent operation.
       </p>
       <div class="row">
-        <label class="vh" for="msgA">First message</label>
-        <input id="msgA" type="text" value="alice" placeholder="message A" />
+        <label class="vh" for="msgA">First report</label>
+        <input id="msgA" type="text" value="PATIENT: Ana Rivera | TEST: fasting glucose | VALUE: 92 mg/dL | RESULT: NORMAL" placeholder="report A" />
         <button id="btn-signA" disabled>Sign A</button>
       </div>
       <div class="row">
-        <label class="vh" for="msgB">Second message</label>
-        <input id="msgB" type="text" value="bob" placeholder="message B" />
+        <label class="vh" for="msgB">Second report</label>
+        <input id="msgB" type="text" value="PATIENT: Ana Rivera | TEST: LDL cholesterol | VALUE: 108 mg/dL | RESULT: NORMAL" placeholder="report B" />
         <button id="btn-signB" disabled>Sign B</button>
       </div>
       <div class="row">
         <button id="btn-agg" disabled>Aggregate and verify</button>
         <label class="tamper" for="tamper">
-          <input id="tamper" type="checkbox" /> tamper with message B
+          <input id="tamper" type="checkbox" /> tamper with report B (108 → 208 mg/dL)
         </label>
       </div>
       <p class="hint" id="hint-agg" role="status"></p>

@@ -3,7 +3,9 @@
 Boneh–Lynn–Shacham signatures on the BLS12 curve, built on the refactored
 pairing library. Two frontends share the same core (`bls.c`):
 
-- **Native CLI** (`demo.c`) — prints `[ ok ]/[FAIL]` checks, exit code based.
+- **Native CLI** (`demo.c`) — prints `[ ok ]/[FAIL]` checks, exit code based,
+  walking through a hospital-lab scenario (sign reports, catch a falsified
+  value, aggregate two reports into one signature).
 - **WebAssembly** (`wasm_export.c`) — the browser runs the *actual* 128-bit
   Optimal-Ate pairing via the `docs/` GitHub Pages site.
 
@@ -21,7 +23,7 @@ Aggregation is just `σ = σ₁ + σ₂ + …`; verification becomes
 | `sha256.c/h` | compact SHA-256 for hash-to-curve |
 | `bls.c/h`    | keygen / sign / verify / aggregate + hex serialization |
 | `wasm_export.c` | Emscripten `EMSCRIPTEN_KEEPALIVE` surface |
-| `demo.c`     | native CLI demo (6 TDD checks) |
+| `demo.c`     | native CLI demo (6 TDD checks; hospital-report story) |
 | `build_wasm.sh` | build `docs/bls.js` + `docs/bls.wasm` |
 
 ## Native build

@@ -63,7 +63,6 @@ KSS16/               KSS16 curve (quartic twist), same module layout
 tests/               mathematical-correctness suites + golden digest
 examples/bls/        BLS short signatures + aggregation (native CLI & WASM)
 docs/                static BLS demo site (index.html, app.js, bls.js, bls.wasm)
-Decouple finite field arithmetic in pairingma128.md   refactor design notes
 ```
 
 ## Requirements
@@ -122,7 +121,9 @@ pk = sk·Q ∈ G₂ ,   σ = sk·H(m) ∈ G₁ ,   verify: e(σ, Q) == e(H(m), p
 
 Two frontends share the same core (`bls.c`): a **native CLI** (`demo.c`) and a
 **WebAssembly** build (`wasm_export.c`) that runs the real 128-bit optimal-Ate
-pairing in the browser.
+pairing in the browser. The demo walks through a concrete use case: a hospital
+lab signs patient reports, and two reports fold into one aggregate signature
+that an insurer verifies in a single check.
 
 ```sh
 cmake -S examples/bls -B build/bls && cmake --build build/bls

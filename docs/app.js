@@ -8,6 +8,11 @@ let state = { sk: null, pk: null, sig: null, sigs: {}, msgs: {} };
 
 const $ = (id) => document.getElementById(id);
 
+/* The falsified report used when "tamper" is ticked: the LDL value is edited
+   from 108 to 208 mg/dL before the report reaches the insurer. */
+const FORGED_B =
+  "PATIENT: Ana Rivera | TEST: LDL cholesterol | VALUE: 208 mg/dL | RESULT: ABNORMAL";
+
 function trunc(hex, n = 20) {
   if (!hex) return "—";
   return hex.length <= n + 1 ? hex : hex.slice(0, n) + "…" + hex.slice(-8);
@@ -98,7 +103,7 @@ function onSign() {
 }
 
 function onVerify() {
-  if (!state.sig) return hint("hint-sign", "Sign a message first.");
+  if (!state.sig) return hint("hint-sign", "Sign a report first.");
   hint("hint-sign", "");
   badge("out-verify", wasmVerify(state.pk, state.sig, $("msg").value) === 1);
 }
@@ -114,13 +119,13 @@ function signSlot(which) {
 
 function onAggregate() {
   if (state.sigs.A == null || state.sigs.B == null) {
-    return hint("hint-agg", "Sign both messages first.");
+    return hint("hint-agg", "Sign both reports first.");
   }
   hint("hint-agg", "");
   const agg = wasmAggregate(state.sigs.A + ";" + state.sigs.B);
   $("out-agg").textContent = trunc(agg, 48);
 
-  const msgB = $("tamper").checked ? "tampered!" : state.msgs.B;
+  const msgB = $("tamper").checked ? FORGED_B : state.msgs.B;
   const ok = wasmAggVerify(
     agg,
     state.pk + ";" + state.pk,
